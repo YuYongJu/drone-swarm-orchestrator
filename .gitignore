@@ -45,3 +45,10 @@ mav.parm
 mav.tlog
 calibrations/
 run_*.sh
+logs/
+terrain/
+eeprom.bin
+*.tlog
+*.tlog.raw
+*.BIN
+*.DAT
