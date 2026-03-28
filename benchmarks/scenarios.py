@@ -17,7 +17,7 @@ import math
 
 from drone_swarm.benchmarks import BenchmarkMetrics, BenchmarkSuite
 from drone_swarm.collision import CollisionAvoidance, haversine
-from drone_swarm.drone import Drone, DroneRole, DroneStatus, Waypoint
+from drone_swarm.drone import Drone, DroneStatus
 
 
 def _make_drone(drone_id: str, lat: float, lon: float, alt: float = 20.0) -> Drone:
@@ -149,7 +149,7 @@ def formation_benchmarks(algorithm: str = "default") -> BenchmarkSuite:
         from drone_swarm.missions import v_formation
         plans = v_formation(35.3630, -117.6690, 20.0, 5, 15.0, 0.0)
         drones = {}
-        for i, waypoints in enumerate(plans):
+        for i, _waypoints in enumerate(plans):
             d = _make_drone(f"d{i}", 35.3630, -117.6690 + i * 0.0001)
             drones[f"d{i}"] = d
         return {"plans": plans, "drones": drones}
@@ -159,7 +159,7 @@ def formation_benchmarks(algorithm: str = "default") -> BenchmarkSuite:
         drones = ctx["drones"]
         metrics = BenchmarkMetrics()
         errors = []
-        for i, (drone_id, drone) in enumerate(drones.items()):
+        for i, (_drone_id, drone) in enumerate(drones.items()):
             if plans[i]:
                 target = plans[i][0]
                 error = haversine(drone.lat, drone.lon, target.lat, target.lon)
