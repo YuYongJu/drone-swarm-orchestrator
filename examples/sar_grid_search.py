@@ -18,7 +18,7 @@ or use:  dso simulate --drones 5
 
 import asyncio
 
-from drone_swarm import AnomalyDetector, Swarm
+from drone_swarm import Swarm
 
 # Search area: roughly 110m x 110m rectangle near Edwards AFB
 SW = (35.3628, -117.6695)
