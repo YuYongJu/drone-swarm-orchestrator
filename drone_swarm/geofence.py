@@ -129,16 +129,20 @@ class Geofence:
         return self._point_in_polygon(lat, lon)
 
     def _point_in_polygon(self, lat: float, lon: float) -> bool:
-        """Ray-casting point-in-polygon test."""
-        n = len(self.polygon)
+        """Ray-casting point-in-polygon test in local-metre coordinates.
+
+        Converts the test point to local metres (using the polygon centroid as
+        reference) so that the ray-casting works correctly at all latitudes.
+        """
+        px, py = _to_local_metres(lat, lon, self._ref_lat, self._ref_lon)
+        n = len(self._local_verts)
         inside = False
-        x, y = lat, lon
         j = n - 1
         for i in range(n):
-            xi, yi = self.polygon[i]
-            xj, yj = self.polygon[j]
-            if ((yi > y) != (yj > y)) and (
-                x < (xj - xi) * (y - yi) / (yj - yi) + xi
+            xi, yi = self._local_verts[i]
+            xj, yj = self._local_verts[j]
+            if ((yi > py) != (yj > py)) and (
+                px < (xj - xi) * (py - yi) / (yj - yi) + xi
             ):
                 inside = not inside
             j = i

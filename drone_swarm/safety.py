@@ -201,12 +201,12 @@ async def emergency_land(orchestrator) -> None:
     orchestrator._running = False
     for drone_id, drone in orchestrator.drones.items():
         if drone.connection and drone.status in (
-            DroneStatus.AIRBORNE, DroneStatus.RETURNING, DroneStatus.ARMED
+            DroneStatus.AIRBORNE, DroneStatus.RETURNING, DroneStatus.LANDING, DroneStatus.ARMED
         ):
             try:
                 drone.connection.set_mode("LAND")
                 async with orchestrator._drone_locks[drone_id]:
-                    drone.status = DroneStatus.RETURNING
+                    drone.status = DroneStatus.LANDING
                 logger.info("'%s' -> LAND mode", drone_id)
             except Exception as e:
                 logger.error("Failed to land '%s': %s", drone_id, e)
