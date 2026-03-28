@@ -165,6 +165,11 @@ def run_preflight_checks(
     Returns:
         List of :class:`CheckResult` instances (one per check).
     """
+    if mavutil is None:
+        raise ImportError(
+            "pymavlink is required for preflight checks. "
+            "Install with: pip install pymavlink"
+        )
     conn = mavutil.mavlink_connection(connection_string, baud=57600)
     try:
         results = [

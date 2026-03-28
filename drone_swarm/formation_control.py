@@ -122,8 +122,13 @@ class FormationController:
             await swarm.goto(drone_id, wp)
     """
 
-    def __init__(self, gains: FormationGains | None = None) -> None:
+    def __init__(
+        self,
+        gains: FormationGains | None = None,
+        dt: float = 0.1,
+    ) -> None:
         self.gains = gains or FormationGains()
+        self.dt = dt  # Expected time step (seconds) for I/D term normalization
         self._offsets: dict[str, tuple[float, float, float]] = {}
         # Integral state per drone: accumulated error (north, east, down)
         self._integral: dict[str, tuple[float, float, float]] = {}
@@ -201,9 +206,9 @@ class FormationController:
 
             # --- I term (future) ---
             prev_int = self._integral.get(drone_id, (0.0, 0.0, 0.0))
-            i_north = prev_int[0] + gains.ki * err_north
-            i_east = prev_int[1] + gains.ki * err_east
-            i_down = prev_int[2] + gains.ki * err_down
+            i_north = prev_int[0] + gains.ki * err_north * self.dt
+            i_east = prev_int[1] + gains.ki * err_east * self.dt
+            i_down = prev_int[2] + gains.ki * err_down * self.dt
             # Anti-windup clamp
             max_int = gains.max_correction_m / max(gains.ki, 1e-9)
             i_north = max(-max_int, min(max_int, i_north))
@@ -213,9 +218,10 @@ class FormationController:
 
             # --- D term (future) ---
             prev_err = self._prev_error.get(drone_id, (0.0, 0.0, 0.0))
-            d_north = gains.kd * (err_north - prev_err[0])
-            d_east = gains.kd * (err_east - prev_err[1])
-            d_down = gains.kd * (err_down - prev_err[2])
+            dt_safe = max(self.dt, 1e-6)
+            d_north = gains.kd * (err_north - prev_err[0]) / dt_safe
+            d_east = gains.kd * (err_east - prev_err[1]) / dt_safe
+            d_down = gains.kd * (err_down - prev_err[2]) / dt_safe
             self._prev_error[drone_id] = (err_north, err_east, err_down)
 
             # Sum PID components

@@ -360,8 +360,8 @@ class TestMavutilNotInstalled:
     @patch("drone_swarm.safety.mavutil", None)
     def test_run_preflight_checks_fails_gracefully(self):
         """When pymavlink is not installed, mavutil is None and calling
-        mavutil.mavlink_connection raises AttributeError/TypeError."""
-        with pytest.raises((AttributeError, TypeError)):
+        run_preflight_checks raises ImportError with a clear message."""
+        with pytest.raises(ImportError, match="pymavlink is required"):
             run_preflight_checks("/dev/ttyUSB0", "alpha")
 
 
