@@ -60,6 +60,9 @@ from .drone import (
     Waypoint,
 )
 
+# Flight logging
+from .flight_log import FlightLog, FlightLogger, TelemetrySnapshot, load_flight_log
+
 # Formation control
 from .formation_control import (
     FormationController,
@@ -113,6 +116,9 @@ __all__ = [
     "DroneCapabilities",
     "DroneRole",
     "DroneStatus",
+    # Flight logging
+    "FlightLog",
+    "FlightLogger",
     # Formation control
     "FormationController",
     "FormationGains",
@@ -132,6 +138,8 @@ __all__ = [
     # Config
     "SwarmConfig",
     "SwarmOrchestrator",
+    # Flight log (functions)
+    "TelemetrySnapshot",
     "Waypoint",
     # Wind estimation
     "WindEstimate",
@@ -147,6 +155,7 @@ __all__ = [
     # Path planning (functions)
     "energy_cost",
     "line_formation",
+    "load_flight_log",
     # Allocation
     "optimal_assign",
     "orbit_point",
