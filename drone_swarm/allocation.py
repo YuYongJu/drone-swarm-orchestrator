@@ -13,9 +13,6 @@ import logging
 import math
 from typing import TYPE_CHECKING
 
-import numpy as np
-from scipy.optimize import linear_sum_assignment
-
 from .drone import Drone, Waypoint
 
 if TYPE_CHECKING:
@@ -53,6 +50,9 @@ def optimal_assign(
 
     Returns a mapping ``{drone_id: [waypoints...]}``.
     """
+    import numpy as np
+    from scipy.optimize import linear_sum_assignment
+
     drone_ids = list(drones.keys())
     n_drones = len(drone_ids)
 
