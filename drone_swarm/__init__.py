@@ -29,12 +29,18 @@ Public API exports
 - Safety: **run_preflight_checks**, **preflight_ok**
 """
 
-import contextlib
 
 from ._version import __version__
 
+# Allocation (functions require scipy at call time, not import time)
+from .allocation import optimal_assign, replan_optimal
+
 # Anomaly detection
 from .anomaly import Anomaly, AnomalyDetector
+
+# Geofence
+# Battery prediction
+from .battery import BatteryConfig, BatteryPredictor
 
 # Collision avoidance
 from .collision import CollisionAvoidance, CollisionRisk, OrcaVelocity
@@ -57,14 +63,6 @@ from .formation_control import (
     FormationGains,
     compute_formation_error,
 )
-
-# Allocation (optional -- requires scipy)
-with contextlib.suppress(ImportError):
-    from .allocation import optimal_assign, replan_optimal
-
-# Geofence
-# Battery prediction
-from .battery import BatteryConfig, BatteryPredictor
 from .geofence import Geofence, GeofenceStatus
 
 # Health scoring
