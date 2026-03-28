@@ -299,7 +299,7 @@ class SwarmOrchestrator:
         connection_string: str,
         role: DroneRole = DroneRole.RECON,
         capabilities: DroneCapabilities | None = None,
-    ):
+    ) -> None:
         if drone_id in self.drones:
             logger.warning("Overwriting existing drone '%s'", drone_id)
         self.drones[drone_id] = Drone(
@@ -316,7 +316,7 @@ class SwarmOrchestrator:
     # Convenience alias used by the simplified API
     add = register_drone
 
-    def register_from_fleet(self, fleet_dir: str = "fleet"):
+    def register_from_fleet(self, fleet_dir: str = "fleet") -> None:
         """Auto-register all drones from fleet registry JSON files."""
         import json
         from pathlib import Path
@@ -335,7 +335,7 @@ class SwarmOrchestrator:
             role = DroneRole(reg.get("default_role", "recon"))
             self.register_drone(reg["drone_id"], reg["port"], role, caps)
 
-    async def connect_all(self):
+    async def connect_all(self) -> None:
         """Connect to all registered drones and start the telemetry loop."""
         for drone in self.drones.values():
             await self._connect_drone(drone)
@@ -345,7 +345,7 @@ class SwarmOrchestrator:
     # Convenience alias
     connect = connect_all
 
-    async def _connect_drone(self, drone: Drone):
+    async def _connect_drone(self, drone: Drone) -> None:
         if mavutil is None:
             raise ImportError(
                 "pymavlink is required. Install with: pip install pymavlink"
@@ -442,7 +442,7 @@ class SwarmOrchestrator:
             self._running = True
             self._telemetry_task = asyncio.create_task(telemetry_loop(self))
 
-    async def takeoff(self, drone_id: str | None = None, altitude: float | None = None):
+    async def takeoff(self, drone_id: str | None = None, altitude: float | None = None) -> None:
         """
         Take off a single drone or all drones.
 
@@ -478,7 +478,7 @@ class SwarmOrchestrator:
         # Restart telemetry loop (was paused for arm sequence)
         await self._restart_telemetry()
 
-    async def goto(self, drone_id: str, waypoint: Waypoint):
+    async def goto(self, drone_id: str, waypoint: Waypoint) -> None:
         drone = self.drones[drone_id]
 
         # If path planning is enabled, route through the planner
@@ -513,7 +513,7 @@ class SwarmOrchestrator:
         )
         logger.info("'%s' -> (%.6f, %.6f, %sm)", drone_id, waypoint.lat, waypoint.lon, waypoint.alt)
 
-    async def return_to_launch(self, drone_id: str):
+    async def return_to_launch(self, drone_id: str) -> None:
         drone = self.drones[drone_id]
         conn = drone.connection
         drone_index = list(self.drones.keys()).index(drone_id)
@@ -533,13 +533,13 @@ class SwarmOrchestrator:
         await self._transition(drone_id, DroneStatus.RETURNING)
         logger.info("'%s' returning to launch", drone_id)
 
-    async def rtl(self, drone_id: str | None = None):
+    async def rtl(self, drone_id: str | None = None) -> None:
         """Return-to-launch for a single drone or all drones."""
         if drone_id is None:
             return await self.rtl_all()
         await self.return_to_launch(drone_id)
 
-    async def land(self, drone_id: str):
+    async def land(self, drone_id: str) -> None:
         drone = self.drones[drone_id]
         conn = drone.connection
         land_mode = 9  # ArduCopter LAND mode number
@@ -553,25 +553,25 @@ class SwarmOrchestrator:
 
     # -- Emergency -------------------------------------------------------------
 
-    async def emergency_land(self):
+    async def emergency_land(self) -> None:
         await _emergency_land(self)
 
-    async def emergency_kill(self, confirm: bool = False):
+    async def emergency_kill(self, confirm: bool = False) -> None:
         await _emergency_kill(self, confirm)
 
     # -- Swarm-wide Commands ---------------------------------------------------
 
-    async def takeoff_all(self, altitude: float | None = None):
+    async def takeoff_all(self, altitude: float | None = None) -> None:
         if altitude is None:
             altitude = self._config.default_altitude_m
         for drone_id in self.drones:
             await self.takeoff(drone_id, altitude)
 
-    async def rtl_all(self):
+    async def rtl_all(self) -> None:
         for drone_id in self.drones:
             await self.return_to_launch(drone_id)
 
-    async def land_all(self):
+    async def land_all(self) -> None:
         for drone_id in self.drones:
             await self.land(drone_id)
 
@@ -584,7 +584,7 @@ class SwarmOrchestrator:
         heading: float = 0.0,
         center: tuple[float, float] | None = None,
         altitude: float | None = None,
-    ):
+    ) -> None:
         """
         Move all drones into a formation pattern.
 
@@ -674,7 +674,7 @@ class SwarmOrchestrator:
         self,
         bounds: list[tuple[float, float]],
         altitude: float | None = None,
-    ):
+    ) -> None:
         """
         Execute an area-sweep mission.
 
@@ -694,11 +694,11 @@ class SwarmOrchestrator:
 
     # -- Mission Management ----------------------------------------------------
 
-    async def assign_mission(self, drone_id: str, waypoints: list[Waypoint]):
+    async def assign_mission(self, drone_id: str, waypoints: list[Waypoint]) -> None:
         self.drones[drone_id].mission = waypoints
         logger.info("Assigned %d waypoints to '%s'", len(waypoints), drone_id)
 
-    async def execute_missions(self):
+    async def execute_missions(self) -> None:
         for drone_id, drone in self.drones.items():
             if drone.mission and drone.status == DroneStatus.AIRBORNE:
                 task = asyncio.create_task(self._run_mission(drone_id))
@@ -777,7 +777,7 @@ class SwarmOrchestrator:
         return [d.drone_id for d in self.drones.values()
                 if d.status == DroneStatus.AIRBORNE]
 
-    def replan_on_loss(self, lost_drone_id: str):
+    def replan_on_loss(self, lost_drone_id: str) -> None:
         """Redistribute a lost drone's waypoints optimally across active drones.
 
         Uses the Hungarian algorithm via :func:`~drone_swarm.allocation.replan_optimal`
@@ -819,7 +819,7 @@ class SwarmOrchestrator:
         }
         return role_requirements.get(role, False)
 
-    def auto_assign_roles(self):
+    def auto_assign_roles(self) -> None:
         for drone_id, drone in self.drones.items():
             caps = drone.capabilities
             if caps.has_payload:
@@ -831,7 +831,7 @@ class SwarmOrchestrator:
             logger.info("Auto-assigned '%s' -> %s (Class %s)",
                         drone_id, drone.role.value, caps.hw_class)
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         self._running = False
         for task in self._mission_tasks.values():
             task.cancel()
