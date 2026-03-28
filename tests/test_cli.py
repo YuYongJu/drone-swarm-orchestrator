@@ -146,11 +146,12 @@ class TestVersionCommand:
 
     def test_version_flag(self, capsys):
         """--version flag on the top-level parser also works."""
+        from drone_swarm._version import __version__
         with pytest.raises(SystemExit) as exc:
             main(["--version"])
         assert exc.value.code == 0
         out = capsys.readouterr().out
-        assert "0.1.0" in out
+        assert __version__ in out
 
 
 # ---------------------------------------------------------------------------
