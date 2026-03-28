@@ -271,10 +271,22 @@ def line_formation(
     spacing_m: float = 20.0,
     heading_deg: float = 0.0,
 ) -> list[list[Waypoint]]:
-    """
-    Arrange drones in a line perpendicular to *heading_deg*.
+    """Arrange drones in a line perpendicular to *heading_deg*.
 
-    Returns one waypoint list per drone.
+    Drones are evenly spaced along a line centered on ``(center_lat, center_lon)``,
+    oriented 90 degrees to the heading. Useful for search lines or perimeter patrols.
+
+    Args:
+        center_lat: Center latitude of the line.
+        center_lon: Center longitude of the line.
+        altitude: Flight altitude in metres.
+        num_drones: Number of drones to position.
+        spacing_m: Distance in metres between adjacent drones.
+        heading_deg: Direction the formation faces (0 = north).
+
+    Returns:
+        A list of waypoint lists, one per drone. Each contains a single
+        waypoint at the drone's formation slot.
     """
     missions: list[list[Waypoint]] = []
     heading_rad = math.radians(heading_deg + 90)
@@ -295,10 +307,23 @@ def v_formation(
     heading_deg: float = 0.0,
     angle_deg: float = 45.0,
 ) -> list[list[Waypoint]]:
-    """
-    V-formation pointed in *heading_deg* direction.
+    """Arrange drones in a V-formation pointed in *heading_deg* direction.
 
-    First drone is the leader at the tip.
+    The first drone is the leader at the tip of the V. Remaining drones
+    alternate between left and right arms, each ``spacing_m`` metres apart
+    along the arm. The V angle is controlled by ``angle_deg``.
+
+    Args:
+        center_lat: Latitude of the V tip (leader position).
+        center_lon: Longitude of the V tip (leader position).
+        altitude: Flight altitude in metres.
+        num_drones: Total number of drones (including leader).
+        spacing_m: Distance along each arm between consecutive drones.
+        heading_deg: Direction the V points (0 = north, 90 = east).
+        angle_deg: Half-angle of the V shape (45 = classic V).
+
+    Returns:
+        A list of waypoint lists, one per drone. Index 0 is the leader.
     """
     missions: list[list[Waypoint]] = []
     heading_rad = math.radians(heading_deg)
@@ -330,8 +355,23 @@ def orbit_point(
     num_drones: int = 3,
     points_per_orbit: int = 12,
 ) -> list[list[Waypoint]]:
-    """
-    Drones orbit a point of interest, evenly spaced around the circle.
+    """Generate circular orbit waypoints around a point of interest.
+
+    Drones are evenly phased around the circle so they maintain equal angular
+    separation throughout the orbit. Each drone gets ``points_per_orbit``
+    waypoints tracing a full 360-degree loop.
+
+    Args:
+        center_lat: Latitude of the orbit center.
+        center_lon: Longitude of the orbit center.
+        altitude: Flight altitude in metres.
+        radius_m: Orbit radius in metres.
+        num_drones: Number of drones to orbit.
+        points_per_orbit: Number of waypoints per full orbit (more = smoother).
+
+    Returns:
+        A list of waypoint lists, one per drone. Each contains
+        ``points_per_orbit`` waypoints tracing the full circle.
     """
     missions: list[list[Waypoint]] = []
     phase_offset = 2 * math.pi / num_drones

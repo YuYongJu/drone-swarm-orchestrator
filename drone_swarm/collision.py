@@ -59,15 +59,23 @@ class OrcaVelocity:
     ve: float  # east component (m/s)
 
 
-def _offset_gps(lat: float, lon: float, alt: float, dn: float, de: float) -> Waypoint:
-    """Return a new Waypoint offset by *dn* metres north and *de* metres east."""
+def _offset_gps(
+    lat: float, lon: float, alt: float,
+    delta_north_m: float, delta_east_m: float,
+) -> Waypoint:
+    """Return a new Waypoint offset by metres north and east (flat-earth approx)."""
+    dn, de = delta_north_m, delta_east_m
     new_lat = lat + (dn / _EARTH_R) * (180.0 / math.pi)
     new_lon = lon + (de / (_EARTH_R * math.cos(math.radians(lat)))) * (180.0 / math.pi)
     return Waypoint(lat=new_lat, lon=new_lon, alt=alt)
 
 
 def _gps_to_ned(ref_lat: float, ref_lon: float, lat: float, lon: float) -> tuple[float, float]:
-    """Convert GPS to local NED offsets (north, east) in metres relative to a reference."""
+    """Convert GPS coordinates to local NED offsets (north, east) in metres.
+
+    Uses a flat-earth approximation relative to ``(ref_lat, ref_lon)``.
+    Accurate for distances under ~10 km.
+    """
     dn = (lat - ref_lat) * (_EARTH_R * math.pi / 180.0)
     de = (lon - ref_lon) * (_EARTH_R * math.cos(math.radians(ref_lat)) * math.pi / 180.0)
     return dn, de
@@ -144,10 +152,14 @@ def _compute_orca_half_plane(
     combined_r = radius_a + radius_b
     combined_r_sq = combined_r * combined_r
 
-    # --- Velocity obstacle (truncated at time horizon tau) ---
-    # The VO is a truncated cone in velocity space.  We need to find
-    # the closest point on the boundary of VO to rel_vel, then the
-    # ORCA half-plane passes through vel_a + 0.5 * u  with normal = u_hat.
+    # --- ORCA Algorithm (van den Berg et al., 2011) ---
+    # Step 1: Build a Velocity Obstacle (VO) — a truncated cone in velocity
+    #   space representing all relative velocities that would cause a collision
+    #   within time horizon tau.
+    # Step 2: Find the smallest correction vector 'u' that moves the current
+    #   relative velocity outside the VO.
+    # Step 3: The ORCA half-plane passes through vel_a + 0.5*u (each agent
+    #   takes responsibility for half the correction) with normal = u_hat.
 
     inv_tau = 1.0 / tau
     # Relative position scaled by 1/tau
@@ -159,7 +171,7 @@ def _compute_orca_half_plane(
 
     dist = math.sqrt(dist_sq)
 
-    # If the agents are actually overlapping, push directly apart
+    # Case 1: Agents overlap — push directly apart (degenerate case)
     if dist_sq <= combined_r_sq:
         # Agents overlap -- use the direction from A to B
         direction = _normalize(rel_pos) if dist > 1e-12 else (1.0, 0.0)
@@ -167,8 +179,8 @@ def _compute_orca_half_plane(
         point = _add(vel_a, _scale(normal, 0.0))
         return _HalfPlane(point=vel_a, normal=normal)
 
-    # Check if rel_vel is inside the VO cone
-    # Project onto the truncated circle or the cone legs
+    # Case 2: No overlap — project rel_vel onto the nearest VO boundary
+    # (either the truncation circle at 1/tau or one of the cone legs)
     if dist_sq > combined_r_sq:
         # No overlap
         # Squared cutoff radius scaled by inv_tau^2
