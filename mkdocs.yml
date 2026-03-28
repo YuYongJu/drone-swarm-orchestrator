@@ -75,5 +75,11 @@ nav:
     - Telemetry: api/telemetry.md
     - Config: api/config.md
     - Simulation: api/simulation.md
+  - Research:
+    - Architecture: ARCHITECTURE.md
+    - Path Planning Review: LITERATURE_REVIEW_PATH_PLANNING.md
+    - Swarm Communication Review: literature-review-swarm-communication.md
+  - Blog:
+    - State of Drone Swarm Software 2026: blog/state-of-drone-swarm-software-2026.md
   - Contributing: contributing.md
   - Changelog: changelog.md
