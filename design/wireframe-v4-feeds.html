@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSO — Wireframe v4: Live Feeds, Role Animations &amp; Connection Types</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-primary: #0F1117;
+    --bg-secondary: #1A1D27;
+    --bg-tertiary: #252836;
+    --border: #2E3247;
+    --text-primary: #F1F3F9;
+    --text-secondary: #9BA1B7;
+    --text-muted: #5C6178;
+    --drone-recon: #3B82F6;
+    --drone-relay: #22C55E;
+    --drone-strike: #EF4444;
+    --drone-decoy: #EAB308;
+    --status-connected: #22C55E;
+    --status-armed: #F59E0B;
+    --status-airborne: #3B82F6;
+    --status-lost: #EF4444;
+    --status-rtl: #A855F7;
+    --danger: #DC2626;
+    --danger-bg: #450A0A;
+    --warning: #F59E0B;
+    --success: #22C55E;
+  }
+  body { background: #080A0F; color: var(--text-primary); font-family: 'Inter', system-ui, sans-serif; padding: 40px; line-height: 1.5; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; }
+  .version-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; background: rgba(59,130,246,0.15); color: var(--drone-recon); border: 1px solid rgba(59,130,246,0.3); margin-bottom: 40px; }
+  .screen-label { font-size: 18px; font-weight: 600; color: var(--text-secondary); margin-top: 64px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .screen-desc { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; max-width: 900px; line-height: 1.6; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .sub-label { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; margin-top: 32px; }
+  .sub-desc { color: var(--text-muted); font-size: 12px; margin-bottom: 16px; }
+
+  /* ═══ MAP BACKGROUND ═══ */
+  .map-bg {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(rgba(46,50,71,0.25) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(46,50,71,0.25) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* ═══ MARKER BASE ═══ */
+  .marker {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: #fff;
+    position: absolute; z-index: 10;
+    cursor: pointer;
+  }
+  .marker.recon  { background: var(--drone-recon); box-shadow: 0 0 12px rgba(59,130,246,0.4); }
+  .marker.relay  { background: var(--drone-relay); box-shadow: 0 0 12px rgba(34,197,94,0.4); }
+  .marker.strike { background: var(--drone-strike); box-shadow: 0 0 12px rgba(239,68,68,0.4); }
+  .marker.decoy  { background: var(--drone-decoy); box-shadow: 0 0 12px rgba(234,179,8,0.4); }
+  .marker.dimmed { opacity: 0.25; }
+  .marker-icon { font-size: 16px; line-height: 1; }
+
+  /* ═══ SECTION 1A: TAP-TO-VIEW ═══ */
+  .tap-view-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    max-width: 1100px;
+  }
+  .tap-map {
+    grid-column: 1 / 4;
+    height: 480px;
+  }
+
+  /* Video feed panel */
+  .video-panel {
+    position: absolute;
+    width: 320px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    z-index: 20;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .video-feed {
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(135deg, #0a0c12 0%, #141720 50%, #0d1018 100%);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .video-feed::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 2px, rgba(255,255,255,0.01) 4px);
+    pointer-events: none;
+  }
+  .video-noise {
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .live-badge {
+    position: absolute; top: 8px; left: 8px;
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(220,38,38,0.85);
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    z-index: 2;
+  }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #fff;
+    animation: live-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .video-drone-id {
+    position: absolute; top: 8px; right: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 8px; border-radius: 4px;
+    z-index: 2;
+  }
+
+  /* HUD overlay */
+  .hud-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 8px 12px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: rgba(59,130,246,0.9);
+    z-index: 2; letter-spacing: 0.5px;
+  }
+  .hud-overlay span { text-shadow: 0 0 6px rgba(59,130,246,0.5); }
+
+  /* Telemetry row below video */
+  .feed-telemetry {
+    padding: 8px 12px;
+    display: flex; gap: 12px; align-items: center;
+    font-size: 11px; color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .feed-telemetry .val { color: var(--text-primary); font-weight: 500; }
+  .feed-actions {
+    padding: 8px 12px;
+    display: flex; gap: 6px;
+  }
+  .feed-btn {
+    flex: 1;
+    padding: 5px 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 10px; font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .feed-btn:hover { background: var(--border); color: var(--text-primary); }
+  .feed-btn.primary { background: rgba(59,130,246,0.15); color: var(--drone-recon); border-color: rgba(59,130,246,0.3); }
+
+  /* Anchor line from panel to marker */
+  .anchor-line {
+    position: absolute;
+    z-index: 15;
+  }
+
+  /* ═══ SECTION 1B: PIP ═══ */
+  .pip-window {
+    position: absolute;
+    width: 200px; height: 112px;
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 25;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+  .pip-window .video-feed { height: 100%; }
+  .pip-close {
+    position: absolute; top: 4px; right: 4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(0,0,0,0.7); color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; cursor: pointer; z-index: 3;
+    border: none;
+  }
+  .pip-label {
+    position: absolute; bottom: 4px; left: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 600;
+    background: rgba(0,0,0,0.6);
+    padding: 1px 6px; border-radius: 3px;
+    z-index: 3;
+  }
+
+  /* ═══ SECTION 1C: MULTI-FEED GRID ═══ */
+  .feeds-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 900px;
+  }
+  .feed-cell {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .feed-cell.active { border-color: var(--drone-recon); box-shadow: 0 0 20px rgba(59,130,246,0.15); }
+  .feed-cell.relay-active { border-color: var(--drone-relay); box-shadow: 0 0 20px rgba(34,197,94,0.15); }
+  .feed-cell.strike-active { border-color: var(--drone-strike); box-shadow: 0 0 20px rgba(239,68,68,0.15); }
+  .feed-cell .video-feed { height: 160px; }
+  .feed-cell-telem {
+    padding: 8px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+  }
+  .feed-cell-telem .battery-bar {
+    display: inline-flex; gap: 1px; margin-left: 4px;
+  }
+  .battery-seg {
+    width: 6px; height: 10px; border-radius: 1px;
+    background: var(--drone-relay);
+  }
+  .battery-seg.empty { background: var(--bg-tertiary); }
+
+  .no-camera {
+    height: 160px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 13px;
+    background: var(--bg-primary);
+  }
+  .no-camera .icon { font-size: 28px; opacity: 0.4; }
+  .no-camera .label { font-weight: 600; }
+  .no-camera .class-tag {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--bg-tertiary); color: var(--text-muted);
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex; gap: 0; margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    max-width: 900px;
+  }
+  .tab {
+    padding: 8px 20px;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab.active { color: var(--text-primary); border-bottom-color: var(--drone-recon); }
+
+  /* ═══ SECTION 2: ROLE EXECUTION ANIMATIONS ═══ */
+  .role-anim-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1100px;
+  }
+  .role-anim-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .role-anim-map {
+    width: 100%; height: 260px;
+    position: relative;
+  }
+  .role-anim-label {
+    text-align: center;
+  }
+  .role-anim-label .name {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .role-anim-label .desc {
+    font-size: 11px; color: var(--text-muted); margin-top: 2px;
+  }
+
+  /* RECON: Radar cone */
+  .radar-cone {
+    position: absolute;
+    width: 120px; height: 80px;
+    z-index: 5;
+    animation: cone-pulse 2s ease-in-out infinite;
+  }
+  @keyframes cone-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.25; }
+  }
+
+  /* RELAY: Data flow dots */
+  .relay-line {
+    position: absolute;
+    z-index: 4;
+  }
+  .data-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--drone-relay);
+    position: absolute;
+    animation: flow-dot 2s linear infinite;
+  }
+  @keyframes flow-dot {
+    0% { offset-distance: 0%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
+  }
+
+  /* STRIKE: Crosshair pulse */
+  .crosshair {
+    position: absolute;
+    width: 28px; height: 28px;
+    z-index: 5;
+    animation: xhair-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes xhair-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+
+  /* DECOY: Flicker */
+  .marker.flicker {
+    animation: decoy-flicker 0.3s step-end infinite;
+  }
+  @keyframes decoy-flicker {
+    0% { opacity: 1; }
+    20% { opacity: 0.6; }
+    40% { opacity: 1; }
+    60% { opacity: 0.75; }
+    80% { opacity: 1; }
+    100% { opacity: 0.85; }
+  }
+
+  /* Distance label */
+  .dist-label {
+    position: absolute; z-index: 6;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    color: var(--drone-strike);
+    background: rgba(15,17,23,0.85);
+    padding: 2px 6px; border-radius: 3px;
+  }
+
+  /* ═══ SECTION 3: CONNECTION TYPES ═══ */
+  .conn-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1000px;
+  }
+  .conn-side {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .conn-map {
+    height: 320px;
+    position: relative;
+  }
+
+  /* Signal bars */
+  .signal-bars {
+    display: inline-flex; gap: 2px; align-items: flex-end;
+    height: 14px;
+  }
+  .signal-bar {
+    width: 3px; border-radius: 1px;
+    background: var(--drone-relay);
+  }
+  .signal-bar.off { background: var(--text-muted); opacity: 0.3; }
+
+  /* Spool indicator */
+  .spool-info {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    background: rgba(15,17,23,0.9);
+    padding: 3px 8px; border-radius: 4px;
+    z-index: 10;
+  }
+
+  /* Connection badge on marker */
+  .conn-badge {
+    position: absolute;
+    bottom: -4px; right: -6px;
+    font-size: 12px;
+    z-index: 12;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    padding: 0 2px;
+    line-height: 1;
+  }
+
+  /* Operator icon */
+  .operator-icon {
+    position: absolute;
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    z-index: 10;
+  }
+
+  /* Legend table */
+  .legend-table {
+    width: 100%;
+    max-width: 700px;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 12px;
+  }
+  .legend-table th {
+    text-align: left;
+    padding: 8px 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .legend-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(46,50,71,0.5);
+    color: var(--text-primary);
+  }
+  .legend-table tr:last-child td { border-bottom: none; }
+  .legend-table .icon-col { font-size: 16px; text-align: center; width: 48px; }
+  .legend-table .mono-sm { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary); }
+  .legend-table .jam-yes { color: var(--drone-relay); font-weight: 600; }
+  .legend-table .jam-no { color: var(--drone-strike); }
+  .legend-table .jam-res { color: var(--drone-decoy); }
+
+  /* Connector label */
+  .conn-label {
+    font-size: 12px; font-weight: 600;
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<h1>Drone Swarm Orchestrator — Wireframe v4</h1>
+<p class="subtitle">Live Camera Feeds, Role Execution Animations &amp; Connection Type Indicators</p>
+<span class="version-badge">v4 — FEEDS &amp; ANIMATIONS</span>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 1: LIVE CAMERA FEEDS
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="screen-label">Section 1 — Live Camera Feeds</div>
+<p class="screen-desc">
+  Tap any drone on the map to open its FPV camera feed. Supports anchored panel, picture-in-picture, and a dedicated multi-feed grid view.
+</p>
+
+<!-- 1A: Tap-to-View -->
+<div class="sub-label">1A — Tap-to-View (ALPHA selected)</div>
+<p class="sub-desc">Tapping ALPHA opens an anchored video panel. Other markers dim. The HUD overlay shows altitude, speed, and heading.</p>
+
+<div class="map-bg tap-map" style="height: 480px; max-width: 1100px; position: relative;">
+  <!-- Dimmed markers -->
+  <div class="marker relay dimmed" style="top: 80px; left: 200px;"><span class="marker-icon">B</span></div>
+  <div class="marker strike dimmed" style="top: 300px; left: 600px;"><span class="marker-icon">C</span></div>
+  <div class="marker decoy dimmed" style="top: 180px; left: 800px;"><span class="marker-icon">D</span></div>
+
+  <!-- ALPHA marker (selected) -->
+  <div class="marker recon" style="top: 200px; left: 340px;">
+    <span class="marker-icon">A</span>
+    <!-- Selection ring -->
+    <div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--drone-recon);opacity:0.5;animation: live-pulse 2s ease-in-out infinite;"></div>
+  </div>
+
+  <!-- Anchor line (SVG) -->
+  <svg class="anchor-line" style="top:0;left:0;width:100%;height:100%;position:absolute;z-index:15;pointer-events:none;">
+    <line x1="358" y1="200" x2="440" y2="135" stroke="rgba(59,130,246,0.3)" stroke-width="1" stroke-dasharray="4,3"/>
+  </svg>
+
+  <!-- Video Feed Panel -->
+  <div class="video-panel" style="top: 30px; left: 440px;">
+    <div class="video-feed">
+      <div class="video-noise"></div>
+      <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+      <div class="video-drone-id" style="color: var(--drone-recon);">ALPHA</div>
+      <!-- Simulated terrain lines -->
+      <svg width="100%" height="100%" style="position:absolute;inset:0;z-index:1;opacity:0.15;" viewBox="0 0 320 180" preserveAspectRatio="none">
+        <path d="M0,140 Q80,100 160,120 Q240,140 320,110" stroke="#3B82F6" fill="none" stroke-width="0.8"/>
+        <path d="M0,155 Q60,135 140,150 Q220,165 320,140" stroke="#3B82F6" fill="none" stroke-width="0.5"/>
+        <path d="M0,165 Q100,155 200,160 Q280,170 320,155" stroke="#3B82F6" fill="none" stroke-width="0.3"/>
+        <!-- Crosshair center -->
+        <line x1="155" y1="85" x2="165" y2="85" stroke="rgba(59,130,246,0.5)" stroke-width="0.5"/>
+        <line x1="160" y1="80" x2="160" y2="90" stroke="rgba(59,130,246,0.5)" stroke-width="0.5"/>
+        <circle cx="160" cy="85" r="8" stroke="rgba(59,130,246,0.3)" fill="none" stroke-width="0.5"/>
+      </svg>
+      <!-- HUD overlay -->
+      <div class="hud-overlay">
+        <span>ALT 45m</span>
+        <span>SPD 8.3 m/s</span>
+        <span>HDG 047&deg;</span>
+      </div>
+    </div>
+    <div class="feed-telemetry">
+      <span>🔋 <span class="val">87%</span></span>
+      <span>📡 <span class="val">GPS 12</span></span>
+      <span>📶 <span class="val">-62 dBm</span></span>
+    </div>
+    <div class="feed-actions">
+      <div class="feed-btn primary">Go To</div>
+      <div class="feed-btn">RTL</div>
+      <div class="feed-btn">Hold</div>
+      <div class="feed-btn">PiP</div>
+      <div class="feed-btn">⛶</div>
+    </div>
+  </div>
+</div>
+
+<!-- 1B: Picture-in-Picture -->
+<div class="sub-label" style="margin-top:48px;">1B — Picture-in-Picture (PiP)</div>
+<p class="sub-desc">Minimize a feed to a small PiP window pinned to the map corner. Multiple PiPs can stack.</p>
+
+<div class="map-bg" style="height: 400px; max-width: 1100px; position: relative;">
+  <!-- Map markers -->
+  <div class="marker recon" style="top: 120px; left: 280px;"><span class="marker-icon">A</span></div>
+  <div class="marker relay" style="top: 180px; left: 450px;"><span class="marker-icon">B</span></div>
+  <div class="marker strike" style="top: 90px; left: 650px;"><span class="marker-icon">C</span></div>
+  <div class="marker decoy" style="top: 250px; left: 350px;"><span class="marker-icon">D</span></div>
+
+  <!-- PiP: CHARLIE (stacked above) -->
+  <div class="pip-window" style="bottom: 136px; right: 16px; border: 2px solid var(--drone-strike);">
+    <div class="video-feed">
+      <div class="video-noise"></div>
+      <div class="live-badge" style="transform:scale(0.85);transform-origin:top left;"><div class="live-dot"></div> LIVE</div>
+      <svg width="100%" height="100%" style="position:absolute;inset:0;z-index:1;opacity:0.1;" viewBox="0 0 200 112" preserveAspectRatio="none">
+        <path d="M0,80 Q50,60 100,70 Q150,80 200,55" stroke="#EF4444" fill="none" stroke-width="0.8"/>
+      </svg>
+      <div class="hud-overlay" style="font-size:8px;">
+        <span>ALT 62m</span>
+        <span>SPD 12.1 m/s</span>
+      </div>
+    </div>
+    <button class="pip-close">&times;</button>
+    <div class="pip-label" style="color: var(--drone-strike);">CHARLIE</div>
+  </div>
+
+  <!-- PiP: ALPHA (bottom) -->
+  <div class="pip-window" style="bottom: 16px; right: 16px; border: 2px solid var(--drone-recon);">
+    <div class="video-feed">
+      <div class="video-noise"></div>
+      <div class="live-badge" style="transform:scale(0.85);transform-origin:top left;"><div class="live-dot"></div> LIVE</div>
+      <svg width="100%" height="100%" style="position:absolute;inset:0;z-index:1;opacity:0.1;" viewBox="0 0 200 112" preserveAspectRatio="none">
+        <path d="M0,70 Q60,50 120,65 Q170,75 200,60" stroke="#3B82F6" fill="none" stroke-width="0.8"/>
+      </svg>
+      <div class="hud-overlay" style="font-size:8px;">
+        <span>ALT 45m</span>
+        <span>SPD 8.3 m/s</span>
+      </div>
+    </div>
+    <button class="pip-close">&times;</button>
+    <div class="pip-label" style="color: var(--drone-recon);">ALPHA</div>
+  </div>
+</div>
+
+<!-- 1C: Multi-Feed Grid -->
+<div class="sub-label" style="margin-top:48px;">1C — Multi-Feed Grid (Feeds Tab)</div>
+<p class="sub-desc">Dedicated tab view showing all camera-equipped drones in a 2x2 grid. Active feed highlighted with role color border.</p>
+
+<!-- Tab bar -->
+<div class="tab-bar">
+  <div class="tab">Map</div>
+  <div class="tab">Swarm</div>
+  <div class="tab active">Feeds</div>
+  <div class="tab">Missions</div>
+</div>
+
+<div class="feeds-grid">
+  <!-- ALPHA — selected -->
+  <div class="feed-cell active">
+    <div class="video-feed">
+      <div class="video-noise"></div>
+      <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+      <div class="video-drone-id" style="color: var(--drone-recon);">ALPHA</div>
+      <svg width="100%" height="100%" style="position:absolute;inset:0;z-index:1;opacity:0.12;" viewBox="0 0 400 160" preserveAspectRatio="none">
+        <path d="M0,120 Q100,80 200,100 Q300,120 400,85" stroke="#3B82F6" fill="none" stroke-width="0.8"/>
+        <path d="M0,135 Q80,110 180,130 Q300,140 400,115" stroke="#3B82F6" fill="none" stroke-width="0.5"/>
+      </svg>
+      <div class="hud-overlay">
+        <span>ALT 45m</span>
+        <span>SPD 8.3 m/s</span>
+        <span>HDG 047&deg;</span>
+      </div>
+    </div>
+    <div class="feed-cell-telem">
+      <span>Alt: <span style="color:var(--text-primary);">45m</span></span>
+      <span>Spd: <span style="color:var(--text-primary);">8.3 m/s</span></span>
+      <span>87% <span class="battery-bar">
+        <span class="battery-seg"></span><span class="battery-seg"></span><span class="battery-seg"></span><span class="battery-seg"></span><span class="battery-seg empty"></span>
+      </span></span>
+      <span>WP: <span style="color:var(--text-primary);">3/7</span></span>
+    </div>
+  </div>
+
+  <!-- BRAVO -->
+  <div class="feed-cell">
+    <div class="video-feed">
+      <div class="video-noise"></div>
+      <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+      <div class="video-drone-id" style="color: var(--drone-relay);">BRAVO</div>
+      <svg width="100%" height="100%" style="position:absolute;inset:0;z-index:1;opacity:0.12;" viewBox="0 0 400 160" preserveAspectRatio="none">
+        <path d="M0,100 Q120,70 240,90 Q350,110 400,80" stroke="#22C55E" fill="none" stroke-width="0.8"/>
+      </svg>
+      <div class="hud-overlay" style="color: rgba(34,197,94,0.9);">
+        <span>ALT 38m</span>
+        <span>SPD 5.1 m/s</span>
+        <span>HDG 192&deg;</span>
+      </div>
+    </div>
+    <div class="feed-cell-telem">
+      <span>Alt: <span style="color:var(--text-primary);">38m</span></span>
+      <span>Spd: <span style="color:var(--text-primary);">5.1 m/s</span></span>
+      <span>92% <span class="battery-bar">
+        <span class="battery-seg"></span><span class="battery-seg"></span><span class="battery-seg"></span><span class="battery-seg"></span><span class="battery-seg" style="background:var(--drone-relay);width:3px;"></span>
+      </span></span>
+      <span>WP: <span style="color:var(--text-primary);">5/5</span></span>
+    </div>
+  </div>
+
+  <!-- CHARLIE -->
+  <div class="feed-cell strike-active">
+    <div class="video-feed">
+      <div class="video-noise"></div>
+      <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+      <div class="video-drone-id" style="color: var(--drone-strike);">CHARLIE</div>
+      <svg width="100%" height="100%" style="position:absolute;inset:0;z-index:1;opacity:0.12;" viewBox="0 0 400 160" preserveAspectRatio="none">
+        <path d="M0,90 Q100,110 200,95 Q300,80 400,100" stroke="#EF4444" fill="none" stroke-width="0.8"/>
+        <line x1="195" y1="70" x2="205" y2="70" stroke="rgba(239,68,68,0.5)" stroke-width="0.5"/>
+        <line x1="200" y1="65" x2="200" y2="75" stroke="rgba(239,68,68,0.5)" stroke-width="0.5"/>
+        <circle cx="200" cy="70" r="6" stroke="rgba(239,68,68,0.3)" fill="none" stroke-width="0.5"/>
+      </svg>
+      <div class="hud-overlay" style="color: rgba(239,68,68,0.9);">
+        <span>ALT 62m</span>
+        <span>SPD 12.1 m/s</span>
+        <span>HDG 315&deg;</span>
+      </div>
+    </div>
+    <div class="feed-cell-telem">
+      <span>Alt: <span style="color:var(--text-primary);">62m</span></span>
+      <span>Spd: <span style="color:var(--text-primary);">12.1 m/s</span></span>
+      <span>74% <span class="battery-bar">
+        <span class="battery-seg" style="background:var(--drone-strike);"></span><span class="battery-seg" style="background:var(--drone-strike);"></span><span class="battery-seg" style="background:var(--drone-strike);"></span><span class="battery-seg empty"></span><span class="battery-seg empty"></span>
+      </span></span>
+      <span>WP: <span style="color:var(--text-primary);">1/3</span></span>
+    </div>
+  </div>
+
+  <!-- DELTA — No camera -->
+  <div class="feed-cell">
+    <div class="no-camera">
+      <div class="icon">🚫</div>
+      <div class="label">NO CAMERA</div>
+      <div class="class-tag">Class A — Sensor-only</div>
+    </div>
+    <div class="feed-cell-telem" style="opacity:0.5;">
+      <span>DELTA</span>
+      <span>Decoy</span>
+      <span>65% <span class="battery-bar">
+        <span class="battery-seg" style="background:var(--drone-decoy);"></span><span class="battery-seg" style="background:var(--drone-decoy);"></span><span class="battery-seg" style="background:var(--drone-decoy);"></span><span class="battery-seg empty"></span><span class="battery-seg empty"></span>
+      </span></span>
+      <span>WP: <span style="color:var(--text-primary);">6/6</span></span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2: ROLE EXECUTION ANIMATIONS
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="screen-label" style="margin-top:80px;">Section 2 — Role Execution Animations</div>
+<p class="screen-desc">
+  Each role has a distinct active-execution animation on the map, making it instantly clear what every drone is doing.
+</p>
+
+<div class="role-anim-row">
+
+  <!-- 2A: RECON — Radar Cone -->
+  <div class="role-anim-cell">
+    <div class="map-bg role-anim-map">
+      <!-- Radar cone SVG -->
+      <svg style="position:absolute;top:75px;left:92px;z-index:5;transform:rotate(-30deg);" width="140" height="100" viewBox="0 0 140 100">
+        <defs>
+          <radialGradient id="cone-grad" cx="0" cy="0.5" r="1" fx="0" fy="0.5">
+            <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <path d="M0,50 L140,15 L140,85 Z" fill="url(#cone-grad)" style="animation: cone-pulse 2s ease-in-out infinite;"/>
+      </svg>
+      <!-- RECON marker with eye icon -->
+      <div class="marker recon" style="top:90px;left:78px;">
+        <span class="marker-icon" style="font-size:16px;">👁</span>
+      </div>
+    </div>
+    <div class="role-anim-label">
+      <div class="name" style="color: var(--drone-recon);">RECON</div>
+      <div class="desc">Actively scanning — 60&deg; radar cone pulses while sweeping the area</div>
+    </div>
+  </div>
+
+  <!-- 2B: RELAY — Data Flow -->
+  <div class="role-anim-cell">
+    <div class="map-bg role-anim-map">
+      <!-- Destination markers (dimmer/smaller) -->
+      <div class="marker recon dimmed" style="top:40px;left:30px;width:24px;height:24px;font-size:10px;"><span>A</span></div>
+      <div class="marker strike dimmed" style="top:200px;left:180px;width:24px;height:24px;font-size:10px;"><span>C</span></div>
+
+      <!-- Data flow lines -->
+      <svg style="position:absolute;inset:0;z-index:4;pointer-events:none;" width="100%" height="100%">
+        <defs>
+          <path id="line1" d="M130,130 Q80,90 42,52"/>
+          <path id="line2" d="M130,130 Q160,170 192,212"/>
+        </defs>
+        <!-- Line to A -->
+        <use href="#line1" stroke="rgba(34,197,94,0.3)" stroke-width="1.5" fill="none" stroke-dasharray="6,4"/>
+        <!-- Line to C -->
+        <use href="#line2" stroke="rgba(34,197,94,0.3)" stroke-width="1.5" fill="none" stroke-dasharray="6,4"/>
+
+        <!-- Animated dots on line 1 -->
+        <circle r="3" fill="#22C55E">
+          <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#line1"/></animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle r="3" fill="#22C55E">
+          <animateMotion dur="2s" begin="0.7s" repeatCount="indefinite"><mpath href="#line1"/></animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2s" begin="0.7s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Animated dots on line 2 -->
+        <circle r="3" fill="#22C55E">
+          <animateMotion dur="2s" begin="0.3s" repeatCount="indefinite"><mpath href="#line2"/></animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+        </circle>
+        <circle r="3" fill="#22C55E">
+          <animateMotion dur="2s" begin="1.2s" repeatCount="indefinite"><mpath href="#line2"/></animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2s" begin="1.2s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+
+      <!-- RELAY marker -->
+      <div class="marker relay" style="top:112px;left:112px;">
+        <span class="marker-icon" style="font-size:14px;">📡</span>
+      </div>
+    </div>
+    <div class="role-anim-label">
+      <div class="name" style="color: var(--drone-relay);">RELAY</div>
+      <div class="desc">Bridging comms — data-flow dots animate along dashed connection lines</div>
+    </div>
+  </div>
+
+  <!-- 2C: STRIKE — On Approach -->
+  <div class="role-anim-cell">
+    <div class="map-bg role-anim-map">
+      <!-- Approach line -->
+      <svg style="position:absolute;inset:0;z-index:4;pointer-events:none;" width="100%" height="100%">
+        <line x1="70" y1="80" x2="190" y2="200" stroke="var(--drone-strike)" stroke-width="1.5" stroke-dasharray="8,4" opacity="0.6"/>
+      </svg>
+
+      <!-- Distance readout -->
+      <div class="dist-label" style="top:135px;left:105px;">340m</div>
+
+      <!-- Target crosshair -->
+      <svg class="crosshair" style="top:187px;left:177px;" viewBox="0 0 28 28">
+        <circle cx="14" cy="14" r="10" stroke="var(--drone-strike)" fill="none" stroke-width="1.5" opacity="0.7"/>
+        <circle cx="14" cy="14" r="4" stroke="var(--drone-strike)" fill="none" stroke-width="1" opacity="0.5"/>
+        <line x1="14" y1="0" x2="14" y2="8" stroke="var(--drone-strike)" stroke-width="1" opacity="0.7"/>
+        <line x1="14" y1="20" x2="14" y2="28" stroke="var(--drone-strike)" stroke-width="1" opacity="0.7"/>
+        <line x1="0" y1="14" x2="8" y2="14" stroke="var(--drone-strike)" stroke-width="1" opacity="0.7"/>
+        <line x1="20" y1="14" x2="28" y2="14" stroke="var(--drone-strike)" stroke-width="1" opacity="0.7"/>
+      </svg>
+
+      <!-- STRIKE marker -->
+      <div class="marker strike" style="top:62px;left:52px;">
+        <span class="marker-icon" style="font-size:14px;">+</span>
+      </div>
+    </div>
+    <div class="role-anim-label">
+      <div class="name" style="color: var(--drone-strike);">STRIKE</div>
+      <div class="desc">On approach — dashed line to target with pulsing crosshair and distance readout</div>
+    </div>
+  </div>
+
+  <!-- 2D: DECOY — Evasive Pattern -->
+  <div class="role-anim-cell">
+    <div class="map-bg role-anim-map">
+      <!-- Zigzag trail -->
+      <svg style="position:absolute;inset:0;z-index:4;pointer-events:none;" width="100%" height="100%">
+        <polyline points="40,200 55,175 45,155 65,135 50,115 70,100 58,80 80,65 68,48 88,38 78,25 95,18"
+                  stroke="var(--drone-decoy)" fill="none" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.5"/>
+        <!-- Fading trail segments -->
+        <polyline points="40,200 55,175 45,155"
+                  stroke="var(--drone-decoy)" fill="none" stroke-width="1" opacity="0.15"/>
+        <polyline points="65,135 50,115 70,100"
+                  stroke="var(--drone-decoy)" fill="none" stroke-width="1.2" opacity="0.3"/>
+      </svg>
+
+      <!-- DECOY marker (flickering) -->
+      <div class="marker decoy flicker" style="top:2px;left:78px;">
+        <span class="marker-icon" style="font-size:14px;">◆</span>
+      </div>
+    </div>
+    <div class="role-anim-label">
+      <div class="name" style="color: var(--drone-decoy);">DECOY</div>
+      <div class="desc">Evasive pattern — zigzag trail with erratic marker flicker simulating unpredictable movement</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 3: CONNECTION TYPE INDICATORS
+     ═══════════════════════════════════════════════════════ -->
+
+<div class="screen-label" style="margin-top:80px;">Section 3 — Connection Type Indicators</div>
+<p class="screen-desc">
+  Drones can be radio-controlled or fiber-optic tethered. The map shows connection type badges, signal info, tether lines, and spool status.
+</p>
+
+<div class="conn-compare">
+  <!-- LEFT: Radio -->
+  <div class="conn-side">
+    <div class="conn-label">
+      <span style="font-size:16px;">📻</span>
+      <span>ALPHA — Radio (SiK 915MHz)</span>
+    </div>
+    <div class="map-bg conn-map">
+      <!-- Curved trail -->
+      <svg style="position:absolute;inset:0;z-index:3;pointer-events:none;" width="100%" height="100%">
+        <path d="M80,260 Q120,220 160,230 Q200,240 230,200 Q260,160 280,170 Q310,180 340,140"
+              stroke="rgba(59,130,246,0.35)" fill="none" stroke-width="2" stroke-linecap="round"/>
+        <!-- Trail dots -->
+        <circle cx="120" cy="232" r="2" fill="rgba(59,130,246,0.2)"/>
+        <circle cx="160" cy="230" r="2" fill="rgba(59,130,246,0.3)"/>
+        <circle cx="200" cy="237" r="2" fill="rgba(59,130,246,0.35)"/>
+        <circle cx="230" cy="200" r="2" fill="rgba(59,130,246,0.4)"/>
+        <circle cx="260" cy="163" r="2" fill="rgba(59,130,246,0.5)"/>
+        <circle cx="310" cy="178" r="2" fill="rgba(59,130,246,0.6)"/>
+      </svg>
+
+      <!-- Radio drone marker -->
+      <div class="marker recon" style="top:122px;left:322px;">
+        <span class="marker-icon">A</span>
+        <span class="conn-badge">📻</span>
+      </div>
+
+      <!-- Signal strength -->
+      <div style="position:absolute;top:128px;left:372px;z-index:12;display:flex;align-items:center;gap:6px;">
+        <div class="signal-bars">
+          <span class="signal-bar" style="height:4px;"></span>
+          <span class="signal-bar" style="height:7px;"></span>
+          <span class="signal-bar" style="height:10px;"></span>
+          <span class="signal-bar" style="height:14px;"></span>
+        </div>
+      </div>
+
+      <!-- Info label -->
+      <div style="position:absolute;bottom:16px;left:16px;z-index:10;">
+        <div style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">
+          RSSI: -62 dBm &middot; Latency: 12ms
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Fiber Optic -->
+  <div class="conn-side">
+    <div class="conn-label">
+      <span style="font-size:16px;">🔌</span>
+      <span>BRAVO — Fiber Optic (2.3km / 5km spool)</span>
+    </div>
+    <div class="map-bg conn-map">
+      <!-- Tether line following flight path -->
+      <svg style="position:absolute;inset:0;z-index:3;pointer-events:none;" width="100%" height="100%">
+        <!-- Tether line (solid, physical cable path) -->
+        <path d="M60,270 Q100,240 140,245 Q190,250 220,210 Q250,175 290,180 Q320,185 350,145 Q370,120 380,100"
+              stroke="rgba(34,197,94,0.5)" fill="none" stroke-width="2" stroke-linecap="round"/>
+        <!-- Subtle glow -->
+        <path d="M60,270 Q100,240 140,245 Q190,250 220,210 Q250,175 290,180 Q320,185 350,145 Q370,120 380,100"
+              stroke="rgba(34,197,94,0.15)" fill="none" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+
+      <!-- Spool / operator icon -->
+      <div class="operator-icon" style="top:256px;left:46px;">🧵</div>
+      <div class="spool-info" style="top:260px;left:82px;">
+        Spool: 2.3 / 5.0 km
+      </div>
+
+      <!-- Fiber drone marker -->
+      <div class="marker relay" style="top:82px;left:362px;">
+        <span class="marker-icon">B</span>
+        <span class="conn-badge">🔌</span>
+      </div>
+
+      <!-- Spool remaining instead of signal bars -->
+      <div style="position:absolute;top:88px;left:410px;z-index:12;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--drone-relay);font-weight:600;">
+          2.3km / 5km
+        </div>
+        <div style="margin-top:3px;width:60px;height:4px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden;">
+          <div style="width:46%;height:100%;background:var(--drone-relay);border-radius:2px;"></div>
+        </div>
+      </div>
+
+      <!-- Info label -->
+      <div style="position:absolute;bottom:16px;left:16px;z-index:10;">
+        <div style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">
+          Latency: 0.3ms &middot; Jam-proof &middot; Tethered
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Connection Type Legend -->
+<div class="sub-label" style="margin-top:32px;">Connection Type Legend</div>
+
+<div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;overflow:hidden;max-width:700px;">
+  <table class="legend-table">
+    <thead>
+      <tr>
+        <th>Icon</th>
+        <th>Connection</th>
+        <th>Jam-proof</th>
+        <th>Range</th>
+        <th>Best for</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="icon-col">📻</td>
+        <td>Radio</td>
+        <td class="jam-no">No</td>
+        <td class="mono-sm">~1 km</td>
+        <td>Recon, relay</td>
+      </tr>
+      <tr>
+        <td class="icon-col">🔌</td>
+        <td>Fiber Optic</td>
+        <td class="jam-yes">Yes</td>
+        <td class="mono-sm">~5-10 km</td>
+        <td>Strike in EW zones</td>
+      </tr>
+      <tr>
+        <td class="icon-col">📶</td>
+        <td>WiFi Mesh</td>
+        <td class="jam-no">No</td>
+        <td class="mono-sm">~500 m</td>
+        <td>Short range swarm</td>
+      </tr>
+      <tr>
+        <td class="icon-col">🏔</td>
+        <td>LoRa</td>
+        <td class="jam-res">Resistant</td>
+        <td class="mono-sm">~5 km+</td>
+        <td>Long range</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="height:80px;"></div>
+
+</body>
+</html>

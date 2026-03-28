@@ -1,0 +1,23 @@
+target-version = "py311"
+line-length = 100
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific rules
+]
+
+[lint.per-file-ignores]
+"drone_swarm/simulation.py" = ["RUF012"]  # mutable class attrs are intentional (search paths)
+"drone_swarm/cli.py" = ["SIM105"]         # try/except for signal handler is clearer than suppress
+"tests/*" = ["SIM117", "RUF043", "B015", "RUF059"]  # test patterns are fine
+
+[lint.isort]
+known-first-party = ["drone_swarm"]

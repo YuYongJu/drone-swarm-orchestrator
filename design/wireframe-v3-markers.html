@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSO — Wireframe v3: Map Markers &amp; Tap-to-Filter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-primary: #0F1117;
+    --bg-secondary: #1A1D27;
+    --bg-tertiary: #252836;
+    --border: #2E3247;
+    --text-primary: #F1F3F9;
+    --text-secondary: #9BA1B7;
+    --text-muted: #5C6178;
+    --drone-recon: #3B82F6;
+    --drone-relay: #22C55E;
+    --drone-strike: #EF4444;
+    --drone-decoy: #EAB308;
+    --status-connected: #22C55E;
+    --status-armed: #F59E0B;
+    --status-airborne: #3B82F6;
+    --status-lost: #EF4444;
+    --status-rtl: #A855F7;
+    --danger: #DC2626;
+    --danger-bg: #450A0A;
+    --warning: #F59E0B;
+    --success: #22C55E;
+  }
+  body { background: #080A0F; color: var(--text-primary); font-family: 'Inter', system-ui, sans-serif; padding: 40px; line-height: 1.5; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; }
+  .version-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; background: rgba(59,130,246,0.15); color: var(--drone-recon); border: 1px solid rgba(59,130,246,0.3); margin-bottom: 40px; }
+  .screen-label { font-size: 18px; font-weight: 600; color: var(--text-secondary); margin-top: 64px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .screen-desc { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; max-width: 900px; line-height: 1.6; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ═══ SECTION 1: MARKER DESIGN SYSTEM ═══ */
+  .marker-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 32px 24px;
+    max-width: 900px;
+    margin-bottom: 24px;
+  }
+  .marker-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .marker-wrapper {
+    position: relative; width: 72px; height: 72px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* The core marker circle */
+  .marker-circle {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px;
+    color: #fff; position: relative; z-index: 2;
+  }
+  .marker-circle.recon  { background: var(--drone-recon); }
+  .marker-circle.relay   { background: var(--drone-relay); }
+  .marker-circle.strike  { background: var(--drone-strike); }
+  .marker-circle.decoy   { background: var(--drone-decoy); }
+  .marker-circle.lost    { background: #52566B; }
+
+  /* Heading arrow */
+  .heading-arrow {
+    position: absolute; z-index: 3;
+    width: 0; height: 0;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-bottom: 8px solid currentColor;
+  }
+  .heading-arrow.top    { top: 12px; left: 50%; transform: translateX(-50%); }
+  .heading-arrow.right  { right: 12px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+  .heading-arrow.bottom { bottom: 12px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+
+  /* Battery arc — SVG overlay */
+  .battery-ring {
+    position: absolute; top: 0; left: 0; width: 72px; height: 72px; z-index: 1;
+  }
+  .battery-ring circle {
+    fill: none; stroke-width: 3; stroke-linecap: round;
+    transform: rotate(-90deg); transform-origin: center;
+  }
+  .battery-track { stroke: rgba(255,255,255,0.08); }
+  .battery-fill-green  { stroke: var(--success); }
+  .battery-fill-amber  { stroke: var(--warning); }
+  .battery-fill-red    { stroke: var(--danger); }
+
+  /* Status halos */
+  .halo {
+    position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+    border-radius: 50%; z-index: 0;
+  }
+  .halo-waypoint {
+    border: 2px solid rgba(255,255,255,0.5);
+    animation: halo-pulse-white 2s ease-in-out infinite;
+  }
+  .halo-drift {
+    border: 2px solid rgba(249,115,22,0.7);
+    animation: halo-pulse-orange 1.2s ease-in-out infinite;
+  }
+  .halo-critical {
+    border: 2px solid rgba(239,68,68,0.9);
+    animation: halo-flash-red 0.6s ease-in-out infinite;
+  }
+  .halo-lost {
+    border: 2px dashed rgba(156,163,175,0.5);
+  }
+  .halo-rtl {
+    border: 2px solid rgba(168,85,247,0.7);
+    animation: halo-pulse-purple 1.5s ease-in-out infinite;
+  }
+  .halo-selected {
+    border: 2.5px solid rgba(255,255,255,0.9);
+    box-shadow: 0 0 12px rgba(255,255,255,0.3);
+  }
+
+  @keyframes halo-pulse-white {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+  @keyframes halo-pulse-orange {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.18); opacity: 1; }
+  }
+  @keyframes halo-flash-red {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.15; }
+  }
+  @keyframes halo-pulse-purple {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 1; }
+  }
+
+  /* Lost contact "?" overlay */
+  .lost-overlay {
+    position: absolute; z-index: 4; font-size: 20px; font-weight: 700;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* Marker label */
+  .marker-label {
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    text-align: center; line-height: 1.3;
+  }
+  .marker-pill {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+    background: var(--bg-tertiary); color: var(--text-secondary); margin-top: 2px;
+  }
+
+  /* Selected marker is enlarged */
+  .marker-wrapper.enlarged { transform: scale(1.2); }
+
+  /* ═══ SECTION 2: TAP-TO-FILTER ═══ */
+  .desktop-frame {
+    width: 100%; max-width: 1200px; height: 700px;
+    background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .topbar {
+    height: 44px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; gap: 8px; flex-shrink: 0;
+  }
+  .tab { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+  .tab.active { background: var(--bg-tertiary); color: var(--text-primary); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .status-badge { display: flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; background: rgba(34,197,94,0.15); color: var(--success); }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .timer { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-primary); }
+  .estop { background: var(--danger-bg); border: 2px solid var(--danger); color: white; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; }
+
+  .main-3col { display: flex; flex: 1; overflow: hidden; }
+
+  /* Fleet Panel */
+  .fleet-panel {
+    width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border);
+    flex-shrink: 0; overflow-y: auto; font-size: 12px;
+  }
+  .fleet-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .fleet-header span { font-size: 13px; font-weight: 600; }
+  .fleet-count { font-size: 11px; font-weight: 600; background: var(--bg-tertiary); padding: 2px 7px; border-radius: 10px; color: var(--text-secondary); }
+  .drone-card { padding: 9px 12px; border-bottom: 1px solid var(--border); position: relative; padding-left: 16px; }
+  .drone-card::before { content:''; position: absolute; left:0; top:0; bottom:0; width:3px; }
+  .drone-card.recon::before { background: var(--drone-recon); }
+  .drone-card.relay::before { background: var(--drone-relay); }
+  .drone-card.strike::before { background: var(--drone-strike); }
+  .drone-card.decoy::before { background: var(--drone-decoy); }
+  .drone-card.selected-card { background: var(--bg-tertiary); }
+  .drone-card.dimmed { opacity: 0.45; }
+  .drone-card-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+  .drone-id { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; }
+  .drone-role { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .drone-role.recon  { background: rgba(59,130,246,0.15); color: var(--drone-recon); }
+  .drone-role.relay   { background: rgba(34,197,94,0.15); color: var(--drone-relay); }
+  .drone-role.strike  { background: rgba(239,68,68,0.15); color: var(--drone-strike); }
+  .drone-role.decoy   { background: rgba(234,179,8,0.15); color: var(--drone-decoy); }
+  .drone-meta { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* Map Area */
+  .map-area {
+    flex: 1; background: var(--bg-primary); position: relative; overflow: hidden;
+  }
+  .map-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(59,130,246,0.03) 0%, transparent 60%),
+      radial-gradient(circle at 70% 60%, rgba(34,197,94,0.02) 0%, transparent 50%),
+      linear-gradient(180deg, #0F1117, #0D0F15);
+  }
+  /* Grid lines for map feel */
+  .map-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Map markers (positioned absolutely) */
+  .map-marker {
+    position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 5;
+    transition: opacity 0.3s;
+  }
+  .map-marker.dimmed { opacity: 0.4; }
+
+  /* Info card on map */
+  .info-card {
+    position: absolute; z-index: 10;
+    background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; width: 280px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .info-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .info-card-title { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; }
+  .info-card-subtitle { font-size: 11px; color: var(--text-muted); }
+  .info-card-data { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary); line-height: 1.7; }
+  .info-card-data strong { color: var(--text-primary); font-weight: 600; }
+  .info-card-actions { display: flex; gap: 6px; margin-top: 12px; }
+  .info-btn {
+    padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 600;
+    font-family: 'Inter', sans-serif; border: 1px solid var(--border);
+    background: var(--bg-tertiary); color: var(--text-primary); cursor: pointer;
+  }
+  .info-btn:hover { background: #2E3247; }
+  .info-btn.danger { border-color: rgba(239,68,68,0.4); color: var(--drone-strike); background: rgba(239,68,68,0.1); }
+
+  /* Feed Panel (Right) */
+  .feed-panel {
+    width: 280px; background: var(--bg-secondary); border-left: 1px solid var(--border);
+    flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .feed-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .feed-header span { font-size: 13px; font-weight: 600; }
+  .filter-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 14px; font-size: 11px; font-weight: 600;
+    background: rgba(59,130,246,0.15); color: var(--drone-recon);
+    border: 1px solid rgba(59,130,246,0.3);
+  }
+  .filter-x {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(59,130,246,0.3); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; cursor: pointer; line-height: 1;
+  }
+  .feed-entries { flex: 1; overflow-y: auto; padding: 6px 0; }
+  .feed-entry { padding: 8px 14px; border-bottom: 1px solid rgba(46,50,71,0.5); font-size: 11px; }
+  .feed-entry .feed-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
+  .feed-entry .feed-msg { color: var(--text-secondary); line-height: 1.4; }
+  .feed-entry .feed-msg .drone-tag { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--drone-recon); }
+
+  /* ═══ SECTION 3: CROSS-REFERENCE ═══ */
+  .crossref-frame {
+    width: 100%; max-width: 1200px; height: 420px;
+    background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; display: flex; position: relative;
+  }
+  .crossref-map { flex: 1; position: relative; overflow: hidden; }
+  .crossref-feed { width: 300px; background: var(--bg-secondary); border-left: 1px solid var(--border); overflow-y: auto; }
+  .feed-entry.highlighted { background: rgba(59,130,246,0.1); border-left: 3px solid var(--drone-recon); }
+  .feed-entry.highlighted .feed-msg { color: var(--text-primary); }
+
+  /* Connector line SVG */
+  .connector-svg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 20;
+  }
+
+  /* Glow animation on marker for cross-ref */
+  @keyframes crossref-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+    50% { box-shadow: 0 0 16px 6px rgba(59,130,246,0.6); }
+  }
+  .marker-circle.glow-pulse {
+    animation: crossref-glow 1.2s ease-in-out 3;
+  }
+
+  /* Annotation arrows */
+  .annotation {
+    position: absolute; z-index: 30; pointer-events: none;
+  }
+  .annotation-text {
+    font-size: 11px; font-weight: 600; color: var(--drone-recon);
+    background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3);
+    padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<h1>DSO Ground Station — Map Markers &amp; Interaction</h1>
+<p class="subtitle">Wireframe v3: Drone marker visual encoding, tap-to-filter, and feed cross-reference</p>
+<div class="version-badge">v3 / MARKERS</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: MAP MARKER DESIGN SYSTEM                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="screen-label">1 &mdash; Map Marker Design System</div>
+<p class="screen-desc">
+  Each drone marker encodes four dimensions: <strong>role</strong> (color), <strong>heading</strong> (directional arrow),
+  <strong>battery level</strong> (arc ring), and <strong>operational status</strong> (halo effect).
+  Below are all 10 marker states rendered at display size.
+</p>
+
+<div class="marker-grid">
+
+  <!-- 1. Recon 87% Normal -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="26" />
+      </svg>
+      <div class="heading-arrow top" style="color:#3B82F6;"></div>
+      <div class="marker-circle recon">A</div>
+    </div>
+    <div class="marker-label">Normal (Recon)<br>87% battery</div>
+    <div class="marker-pill">ALPHA</div>
+  </div>
+
+  <!-- 2. Relay 92% Normal -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="16" />
+      </svg>
+      <div class="heading-arrow right" style="color:#22C55E;"></div>
+      <div class="marker-circle relay">B</div>
+    </div>
+    <div class="marker-label">Normal (Relay)<br>92% battery</div>
+    <div class="marker-pill">BRAVO</div>
+  </div>
+
+  <!-- 3. Strike 78% Normal -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="44" />
+      </svg>
+      <div class="heading-arrow top" style="color:#EF4444;"></div>
+      <div class="marker-circle strike">C</div>
+    </div>
+    <div class="marker-label">Normal (Strike)<br>78% battery</div>
+    <div class="marker-pill">CHARLIE</div>
+  </div>
+
+  <!-- 4. Decoy 65% Normal -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="70" />
+      </svg>
+      <div class="heading-arrow bottom" style="color:#EAB308;"></div>
+      <div class="marker-circle decoy">D</div>
+    </div>
+    <div class="marker-label">Normal (Decoy)<br>65% battery</div>
+    <div class="marker-pill">DELTA</div>
+  </div>
+
+  <!-- 5. Executing Waypoint — white pulse -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <div class="halo halo-waypoint"></div>
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="30" />
+      </svg>
+      <div class="heading-arrow top" style="color:#3B82F6;"></div>
+      <div class="marker-circle recon">E</div>
+    </div>
+    <div class="marker-label">Executing Waypoint<br>white pulse halo</div>
+    <div class="marker-pill">ECHO</div>
+  </div>
+
+  <!-- 6. Formation Drift Warning — orange pulse -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <div class="halo halo-drift"></div>
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="40" />
+      </svg>
+      <div class="heading-arrow right" style="color:#22C55E;"></div>
+      <div class="marker-circle relay">F</div>
+    </div>
+    <div class="marker-label">Formation Drift<br>orange pulse halo</div>
+    <div class="marker-pill">FOX</div>
+  </div>
+
+  <!-- 7. Low Battery Critical — red flash, red arc -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <div class="halo halo-critical"></div>
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-red" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="183"
+                style="animation: battery-flash 0.6s ease-in-out infinite;" />
+      </svg>
+      <div class="heading-arrow top" style="color:#EF4444;"></div>
+      <div class="marker-circle strike">G</div>
+    </div>
+    <div class="marker-label">Low Battery (&lt;10%)<br>red flash, red arc</div>
+    <div class="marker-pill">GOLF</div>
+  </div>
+
+  <!-- 8. Lost Contact — grey, "?", dashed ring -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <div class="halo halo-lost"></div>
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+      </svg>
+      <div class="marker-circle lost">H</div>
+      <div class="lost-overlay">?</div>
+    </div>
+    <div class="marker-label">Lost Contact<br>grey + dashed ring</div>
+    <div class="marker-pill">HOTEL</div>
+  </div>
+
+  <!-- 9. RTL Triggered — purple pulse -->
+  <div class="marker-cell">
+    <div class="marker-wrapper">
+      <div class="halo halo-rtl"></div>
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-amber" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="141" />
+      </svg>
+      <div class="heading-arrow bottom" style="color:#A855F7;"></div>
+      <div class="marker-circle" style="background:#A855F7;">I</div>
+    </div>
+    <div class="marker-label">RTL Triggered<br>purple pulse halo</div>
+    <div class="marker-pill">INDIA</div>
+  </div>
+
+  <!-- 10. Selected — white ring, enlarged -->
+  <div class="marker-cell">
+    <div class="marker-wrapper enlarged">
+      <div class="halo halo-selected"></div>
+      <svg class="battery-ring" viewBox="0 0 72 72">
+        <circle class="battery-track" cx="36" cy="36" r="32" />
+        <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                stroke-dasharray="201" stroke-dashoffset="26" />
+      </svg>
+      <div class="heading-arrow top" style="color:#3B82F6;"></div>
+      <div class="marker-circle recon">A</div>
+    </div>
+    <div class="marker-label">Selected State<br>white ring, enlarged</div>
+    <div class="marker-pill">ALPHA</div>
+  </div>
+
+</div>
+
+<style>
+  @keyframes battery-flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+</style>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: TAP-TO-FILTER INTERACTION                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="screen-label">2 &mdash; Tap-to-Filter Interaction</div>
+<p class="screen-desc">
+  Tapping a drone marker on the map selects it: the marker enlarges with a bright ring, other markers dim to 0.4 opacity,
+  the mission feed filters to show only that drone's events, and an info card appears near the marker.
+  Tap the "X" on the filter badge or tap empty map space to clear.
+</p>
+
+<div class="desktop-frame">
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="tab active">Map</div>
+    <div class="tab">Telemetry</div>
+    <div class="tab">Waypoints</div>
+    <div class="topbar-right">
+      <div class="status-badge"><div class="status-dot"></div> LIVE</div>
+      <div class="timer mono">T+ 00:14:32</div>
+      <div class="estop">E-STOP</div>
+    </div>
+  </div>
+
+  <div class="main-3col">
+    <!-- Fleet Panel (Left) -->
+    <div class="fleet-panel">
+      <div class="fleet-header"><span>Fleet</span><span class="fleet-count">5</span></div>
+
+      <div class="drone-card recon selected-card">
+        <div class="drone-card-row">
+          <span class="drone-id" style="color:var(--drone-recon);">ALPHA</span>
+          <span class="drone-role recon">Recon</span>
+        </div>
+        <div class="drone-meta">87% &bull; Alt 45m &bull; WP 3/7</div>
+      </div>
+      <div class="drone-card relay dimmed">
+        <div class="drone-card-row">
+          <span class="drone-id" style="color:var(--drone-relay);">BRAVO</span>
+          <span class="drone-role relay">Relay</span>
+        </div>
+        <div class="drone-meta">92% &bull; Alt 60m &bull; Hovering</div>
+      </div>
+      <div class="drone-card strike dimmed">
+        <div class="drone-card-row">
+          <span class="drone-id" style="color:var(--drone-strike);">CHARLIE</span>
+          <span class="drone-role strike">Strike</span>
+        </div>
+        <div class="drone-meta">78% &bull; Alt 35m &bull; WP 5/8</div>
+      </div>
+      <div class="drone-card decoy dimmed">
+        <div class="drone-card-row">
+          <span class="drone-id" style="color:var(--drone-decoy);">DELTA</span>
+          <span class="drone-role decoy">Decoy</span>
+        </div>
+        <div class="drone-meta">65% &bull; Alt 50m &bull; Loiter</div>
+      </div>
+      <div class="drone-card relay dimmed">
+        <div class="drone-card-row">
+          <span class="drone-id" style="color:var(--drone-relay);">ECHO</span>
+          <span class="drone-role relay">Relay</span>
+        </div>
+        <div class="drone-meta">84% &bull; Alt 55m &bull; WP 2/4</div>
+      </div>
+    </div>
+
+    <!-- Map Area -->
+    <div class="map-area">
+      <div class="map-bg"></div>
+      <div class="map-grid"></div>
+
+      <!-- ALPHA — Selected -->
+      <div class="map-marker" style="top: 38%; left: 35%;">
+        <div class="marker-wrapper enlarged">
+          <div class="halo halo-selected"></div>
+          <svg class="battery-ring" viewBox="0 0 72 72">
+            <circle class="battery-track" cx="36" cy="36" r="32" />
+            <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                    stroke-dasharray="201" stroke-dashoffset="26" />
+          </svg>
+          <div class="heading-arrow top" style="color:#3B82F6;"></div>
+          <div class="marker-circle recon">A</div>
+        </div>
+        <div class="marker-pill" style="margin-top:4px;">ALPHA</div>
+      </div>
+
+      <!-- BRAVO — Dimmed -->
+      <div class="map-marker dimmed" style="top: 22%; left: 55%;">
+        <div class="marker-wrapper">
+          <svg class="battery-ring" viewBox="0 0 72 72">
+            <circle class="battery-track" cx="36" cy="36" r="32" />
+            <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                    stroke-dasharray="201" stroke-dashoffset="16" />
+          </svg>
+          <div class="heading-arrow right" style="color:#22C55E;"></div>
+          <div class="marker-circle relay">B</div>
+        </div>
+        <div class="marker-pill" style="margin-top:4px;">BRAVO</div>
+      </div>
+
+      <!-- CHARLIE — Dimmed -->
+      <div class="map-marker dimmed" style="top: 62%; left: 60%;">
+        <div class="marker-wrapper">
+          <svg class="battery-ring" viewBox="0 0 72 72">
+            <circle class="battery-track" cx="36" cy="36" r="32" />
+            <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                    stroke-dasharray="201" stroke-dashoffset="44" />
+          </svg>
+          <div class="heading-arrow top" style="color:#EF4444;"></div>
+          <div class="marker-circle strike">C</div>
+        </div>
+        <div class="marker-pill" style="margin-top:4px;">CHARLIE</div>
+      </div>
+
+      <!-- DELTA — Dimmed -->
+      <div class="map-marker dimmed" style="top: 50%; left: 18%;">
+        <div class="marker-wrapper">
+          <svg class="battery-ring" viewBox="0 0 72 72">
+            <circle class="battery-track" cx="36" cy="36" r="32" />
+            <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                    stroke-dasharray="201" stroke-dashoffset="70" />
+          </svg>
+          <div class="heading-arrow bottom" style="color:#EAB308;"></div>
+          <div class="marker-circle decoy">D</div>
+        </div>
+        <div class="marker-pill" style="margin-top:4px;">DELTA</div>
+      </div>
+
+      <!-- ECHO — Dimmed -->
+      <div class="map-marker dimmed" style="top: 30%; left: 75%;">
+        <div class="marker-wrapper">
+          <svg class="battery-ring" viewBox="0 0 72 72">
+            <circle class="battery-track" cx="36" cy="36" r="32" />
+            <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                    stroke-dasharray="201" stroke-dashoffset="32" />
+          </svg>
+          <div class="heading-arrow top" style="color:#22C55E;"></div>
+          <div class="marker-circle relay">E</div>
+        </div>
+        <div class="marker-pill" style="margin-top:4px;">ECHO</div>
+      </div>
+
+      <!-- Info Card for ALPHA -->
+      <div class="info-card" style="top: 16%; left: 40%;">
+        <div class="info-card-header">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--drone-recon);"></div>
+          <span class="info-card-title">ALPHA</span>
+          <span class="info-card-subtitle">(Recon) &mdash; Class B</span>
+        </div>
+        <div class="info-card-data">
+          <strong>34.0522&deg;N</strong> &nbsp; <strong>-118.2437&deg;W</strong><br>
+          Alt: <strong>45m</strong> &nbsp; Spd: <strong>8.3 m/s</strong> &nbsp; Hdg: <strong>127&deg;</strong><br>
+          Batt: <strong>87%</strong> (~12min) &nbsp; WP: <strong>3/7</strong>
+        </div>
+        <div class="info-card-actions">
+          <button class="info-btn">Go To</button>
+          <button class="info-btn danger">RTL</button>
+          <button class="info-btn">Hold</button>
+          <button class="info-btn">Set Role</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feed Panel (Right) — Filtered to ALPHA -->
+    <div class="feed-panel">
+      <div class="feed-header">
+        <span>Mission Feed</span>
+        <div class="filter-badge">
+          Filtered: ALPHA
+          <div class="filter-x">&times;</div>
+        </div>
+      </div>
+      <div class="feed-entries">
+        <div class="feed-entry">
+          <div class="feed-time">14:32:08</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> reached WP 3 &mdash; holding 2s for scan</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:31:45</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> heading adjusted 127&deg; for wind correction</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:31:12</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> transiting WP 2 &rarr; WP 3 &mdash; ETA 18s</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:30:44</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> scan complete at WP 2 &mdash; 4 targets tagged</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:30:02</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> reached WP 2 &mdash; beginning area scan</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:29:31</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> altitude adjusted to 45m (thermal layer)</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:28:58</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> transiting WP 1 &rarr; WP 2 &mdash; ETA 22s</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:28:15</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> reached WP 1 &mdash; sensor calibration OK</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:27:40</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> airborne &mdash; climbing to 45m</div>
+        </div>
+        <div class="feed-entry">
+          <div class="feed-time">14:27:05</div>
+          <div class="feed-msg"><span class="drone-tag">ALPHA</span> armed &mdash; preflight OK, GPS lock 3D</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: FEED-MAP CROSS-REFERENCE                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="screen-label">3 &mdash; Feed-Map Cross-Reference</div>
+<p class="screen-desc">
+  When a new feed entry appears, the corresponding drone's map marker briefly pulses/glows to draw the operator's eye.
+  Below, the highlighted feed entry is connected by a visual line to its drone marker on the map, demonstrating the
+  text-to-spatial link.
+</p>
+
+<div class="crossref-frame">
+  <!-- Map side -->
+  <div class="crossref-map">
+    <div class="map-bg"></div>
+    <div class="map-grid"></div>
+
+    <!-- ALPHA — glowing -->
+    <div class="map-marker" style="top: 35%; left: 30%;">
+      <div class="marker-wrapper">
+        <svg class="battery-ring" viewBox="0 0 72 72">
+          <circle class="battery-track" cx="36" cy="36" r="32" />
+          <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                  stroke-dasharray="201" stroke-dashoffset="26" />
+        </svg>
+        <div class="heading-arrow top" style="color:#3B82F6;"></div>
+        <div class="marker-circle recon glow-pulse">A</div>
+      </div>
+      <div class="marker-pill" style="margin-top:4px;">ALPHA</div>
+    </div>
+
+    <!-- BRAVO -->
+    <div class="map-marker" style="top: 20%; left: 55%;">
+      <div class="marker-wrapper">
+        <svg class="battery-ring" viewBox="0 0 72 72">
+          <circle class="battery-track" cx="36" cy="36" r="32" />
+          <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                  stroke-dasharray="201" stroke-dashoffset="16" />
+        </svg>
+        <div class="heading-arrow right" style="color:#22C55E;"></div>
+        <div class="marker-circle relay">B</div>
+      </div>
+      <div class="marker-pill" style="margin-top:4px;">BRAVO</div>
+    </div>
+
+    <!-- CHARLIE -->
+    <div class="map-marker" style="top: 65%; left: 50%;">
+      <div class="marker-wrapper">
+        <svg class="battery-ring" viewBox="0 0 72 72">
+          <circle class="battery-track" cx="36" cy="36" r="32" />
+          <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                  stroke-dasharray="201" stroke-dashoffset="44" />
+        </svg>
+        <div class="heading-arrow top" style="color:#EF4444;"></div>
+        <div class="marker-circle strike">C</div>
+      </div>
+      <div class="marker-pill" style="margin-top:4px;">CHARLIE</div>
+    </div>
+
+    <!-- DELTA -->
+    <div class="map-marker" style="top: 55%; left: 15%;">
+      <div class="marker-wrapper">
+        <svg class="battery-ring" viewBox="0 0 72 72">
+          <circle class="battery-track" cx="36" cy="36" r="32" />
+          <circle class="battery-fill-green" cx="36" cy="36" r="32"
+                  stroke-dasharray="201" stroke-dashoffset="70" />
+        </svg>
+        <div class="heading-arrow bottom" style="color:#EAB308;"></div>
+        <div class="marker-circle decoy">D</div>
+      </div>
+      <div class="marker-pill" style="margin-top:4px;">DELTA</div>
+    </div>
+
+    <!-- Connector line: from feed entry to ALPHA marker -->
+    <svg class="connector-svg" viewBox="0 0 900 420" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.8" />
+          <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.15" />
+        </linearGradient>
+      </defs>
+      <!-- Line from right edge (feed panel) to ALPHA marker area -->
+      <line x1="900" y1="68" x2="310" y2="165" stroke="url(#lineGrad)" stroke-width="2" stroke-dasharray="6 4" />
+      <!-- Small circle at marker end -->
+      <circle cx="310" cy="165" r="4" fill="#3B82F6" opacity="0.7" />
+    </svg>
+
+    <!-- Annotation -->
+    <div class="annotation" style="top: 80%; left: 20%;">
+      <div class="annotation-text">Feed event triggers marker glow pulse (3 cycles)</div>
+    </div>
+  </div>
+
+  <!-- Feed side -->
+  <div class="crossref-feed">
+    <div style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:13px; font-weight:600;">Mission Feed</div>
+
+    <div class="feed-entry highlighted">
+      <div class="feed-time">14:32:08</div>
+      <div class="feed-msg"><span class="drone-tag">ALPHA</span> reached WP 3 &mdash; holding 2s for scan</div>
+    </div>
+    <div class="feed-entry">
+      <div class="feed-time">14:31:55</div>
+      <div class="feed-msg" style="color:var(--drone-relay);font-weight:500;">BRAVO</div>
+      <div class="feed-msg">relay link quality &mdash; 94% signal</div>
+    </div>
+    <div class="feed-entry">
+      <div class="feed-time">14:31:45</div>
+      <div class="feed-msg"><span class="drone-tag">ALPHA</span> heading adjusted 127&deg;</div>
+    </div>
+    <div class="feed-entry">
+      <div class="feed-time">14:31:30</div>
+      <div class="feed-msg"><span style="color:var(--drone-strike);font-weight:600;font-family:'JetBrains Mono',monospace;">CHARLIE</span> approaching WP 5</div>
+    </div>
+    <div class="feed-entry">
+      <div class="feed-time">14:31:12</div>
+      <div class="feed-msg"><span class="drone-tag">ALPHA</span> transiting WP 2 &rarr; WP 3</div>
+    </div>
+    <div class="feed-entry">
+      <div class="feed-time">14:30:58</div>
+      <div class="feed-msg"><span style="color:var(--drone-decoy);font-weight:600;font-family:'JetBrains Mono',monospace;">DELTA</span> loiter pattern stable</div>
+    </div>
+    <div class="feed-entry">
+      <div class="feed-time">14:30:44</div>
+      <div class="feed-msg"><span class="drone-tag">ALPHA</span> scan complete at WP 2</div>
+    </div>
+    <div class="feed-entry">
+      <div class="feed-time">14:30:20</div>
+      <div class="feed-msg"><span style="color:var(--drone-relay);font-weight:600;font-family:'JetBrains Mono',monospace;">BRAVO</span> altitude hold at 60m</div>
+    </div>
+  </div>
+</div>
+
+<div style="height:80px;"></div>
+
+</body>
+</html>

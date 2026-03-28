@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "drone-swarm"
+dynamic = ["version"]
+description = "Python SDK for multi-drone swarm orchestration over MAVLink"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "DSO Team" },
+]
+keywords = ["drone", "swarm", "mavlink", "ardupilot", "uav", "orchestration"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Framework :: AsyncIO",
+]
+dependencies = [
+    "pymavlink>=2.4.40",
+]
+
+[project.optional-dependencies]
+yaml = ["pyyaml>=6.0"]
+sim = ["pyyaml>=6.0"]
+allocation = ["scipy>=1.11", "numpy>=1.24"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.8",
+    "pyyaml>=6.0",
+    "scipy>=1.11",
+    "numpy>=1.24",
+]
+all = [
+    "pyyaml>=6.0",
+    "scipy>=1.11",
+    "numpy>=1.24",
+]
+
+[project.urls]
+Homepage = "https://github.com/yuyongju/drone-swarm-orchestrator"
+Documentation = "https://github.com/yuyongju/drone-swarm-orchestrator#readme"
+Repository = "https://github.com/yuyongju/drone-swarm-orchestrator"
+Issues = "https://github.com/yuyongju/drone-swarm-orchestrator/issues"
+
+[project.scripts]
+dso = "drone_swarm.cli:main"
+
+[tool.hatch.version]
+path = "drone_swarm/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["drone_swarm"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

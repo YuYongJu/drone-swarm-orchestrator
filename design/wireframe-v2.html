@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSO — Ground Station Wireframe v2 (Mission Feed)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-primary: #0F1117;
+    --bg-secondary: #1A1D27;
+    --bg-tertiary: #252836;
+    --border: #2E3247;
+    --text-primary: #F1F3F9;
+    --text-secondary: #9BA1B7;
+    --text-muted: #5C6178;
+    --drone-recon: #3B82F6;
+    --drone-relay: #22C55E;
+    --drone-strike: #EF4444;
+    --drone-decoy: #EAB308;
+    --status-connected: #22C55E;
+    --status-armed: #F59E0B;
+    --status-airborne: #3B82F6;
+    --status-lost: #EF4444;
+    --status-rtl: #A855F7;
+    --danger: #DC2626;
+    --danger-bg: #450A0A;
+    --warning: #F59E0B;
+    --success: #22C55E;
+  }
+  body { background: #080A0F; color: var(--text-primary); font-family: 'Inter', system-ui, sans-serif; padding: 40px; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; }
+  .version-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; background: rgba(59,130,246,0.15); color: var(--drone-recon); border: 1px solid rgba(59,130,246,0.3); margin-bottom: 40px; }
+  .screen-label { font-size: 18px; font-weight: 600; color: var(--text-secondary); margin-top: 64px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .screen-desc { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; max-width: 900px; line-height: 1.5; }
+
+  /* ═══ DESKTOP LAYOUT ═══ */
+  .desktop-frame {
+    width: 100%; max-width: 1200px; height: 720px;
+    background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+
+  /* Top Bar */
+  .topbar {
+    height: 48px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; gap: 8px; flex-shrink: 0;
+  }
+  .tab { padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; }
+  .tab.active { background: var(--bg-tertiary); color: var(--text-primary); }
+  .topbar-center { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .status-badge { display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(34,197,94,0.15); color: var(--success); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .timer { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--text-primary); }
+  .drone-count { font-size: 13px; color: var(--text-secondary); }
+  .estop { margin-left: 16px; background: var(--danger-bg); border: 2px solid var(--danger); color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 700; font-family: 'Inter',sans-serif; cursor: pointer; letter-spacing: 0.5px; }
+
+  /* 3-Column Layout */
+  .main-3col { display: flex; flex: 1; overflow: hidden; }
+
+  /* Fleet Panel (Left) */
+  .fleet-panel {
+    width: 280px; background: var(--bg-secondary); border-right: 1px solid var(--border);
+    flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto;
+  }
+  .fleet-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .fleet-header span { font-size: 14px; font-weight: 600; }
+  .fleet-count { font-size: 12px; font-weight: 600; background: var(--bg-tertiary); padding: 2px 8px; border-radius: 10px; color: var(--text-secondary); }
+
+  .drone-card { padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; position: relative; padding-left: 18px; }
+  .drone-card::before { content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+  .drone-card.recon::before { background: var(--drone-recon); }
+  .drone-card.relay::before { background: var(--drone-relay); }
+  .drone-card.strike::before { background: var(--drone-strike); }
+  .drone-card.selected { background: var(--bg-tertiary); }
+  .drone-card-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .drone-id { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; }
+  .battery-indicator { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .battery-bar { width: 28px; height: 12px; border: 1.5px solid var(--text-muted); border-radius: 2px; padding: 1.5px; position: relative; }
+  .battery-bar::after { content:''; position: absolute; right: -3px; top: 2px; width: 2px; height: 5px; background: var(--text-muted); border-radius: 0 1px 1px 0; }
+  .battery-fill { height: 100%; border-radius: 1px; }
+  .battery-fill.high { background: var(--success); width: 87%; }
+  .battery-fill.mid { background: var(--success); width: 92%; }
+  .battery-fill.low { background: var(--warning); width: 78%; }
+  .drone-card-row2 { display: flex; gap: 12px; font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; }
+  .drone-card-row3 { display: flex; align-items: center; justify-content: space-between; }
+  .status-pill { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; color: white; }
+  .status-pill.airborne { background: rgba(59,130,246,0.25); color: var(--drone-recon); }
+  .altitude { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary); }
+
+  /* Map Area (Center) */
+  .map-area { flex: 1; position: relative; overflow: hidden; }
+  .map-bg {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 30% 40%, #1a2332 0%, transparent 50%), radial-gradient(ellipse at 70% 60%, #1c2636 0%, transparent 40%), radial-gradient(ellipse at 50% 80%, #15202e 0%, transparent 50%), linear-gradient(135deg, #0d1520 0%, #111c2a 50%, #0e1722 100%);
+    position: relative;
+  }
+  .map-bg::before { content:''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 80px 80px; }
+
+  /* Geofence */
+  .geofence-overlay { position: absolute; border: 2px dashed rgba(220,38,38,0.5); background: rgba(220,38,38,0.03); border-radius: 8px; }
+
+  /* SVG layer */
+  .map-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* Drone markers on map */
+  .drone-marker-shape { width: 24px; height: 24px; border: 2px solid white; border-radius: 50% 50% 50% 4px; display: flex; align-items: center; justify-content: center; }
+  .drone-marker-shape.recon { background: var(--drone-recon); }
+  .drone-marker-shape.relay { background: var(--drone-relay); }
+  .drone-marker-shape.strike { background: var(--drone-strike); }
+  .drone-marker-label { position: absolute; top: 28px; left: 50%; transform: translateX(-50%); background: rgba(26,29,39,0.9); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+
+  /* Waypoints */
+  .waypoint { position: absolute; width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: var(--text-primary); }
+  .waypoint.active { background: white; color: var(--bg-primary); box-shadow: 0 0 10px rgba(255,255,255,0.25); }
+  .waypoint.done { background: rgba(34,197,94,0.3); border-color: var(--success); color: var(--success); }
+
+  .home-marker { position: absolute; width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+
+  .map-controls { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 1px; }
+  .map-ctrl-btn { width: 32px; height: 32px; background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+  .map-ctrl-btn:first-child { border-radius: 5px 5px 0 0; }
+  .map-ctrl-btn:last-child { border-radius: 0 0 5px 5px; }
+
+  /* ═══ ALERT OVERLAY (streaks across map) ═══ */
+  .alert-overlay {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    background: rgba(220,38,38,0.9); backdrop-filter: blur(8px);
+    padding: 10px 24px; border-radius: 8px;
+    display: flex; align-items: center; gap: 10px;
+    animation: alertSlideIn 0.4s ease-out;
+    box-shadow: 0 4px 24px rgba(220,38,38,0.4);
+    z-index: 100;
+  }
+  @keyframes alertSlideIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  .alert-icon { font-size: 18px; }
+  .alert-text { font-size: 13px; font-weight: 600; color: white; }
+  .alert-dismiss { font-size: 11px; color: rgba(255,255,255,0.6); cursor: pointer; margin-left: 8px; }
+
+  /* ═══ MISSION FEED (Right Panel) ═══ */
+  .mission-feed {
+    width: 320px; background: var(--bg-secondary); border-left: 1px solid var(--border);
+    flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .feed-header {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .feed-header span { font-size: 14px; font-weight: 600; }
+  .feed-filter {
+    display: flex; gap: 4px;
+  }
+  .feed-filter-btn {
+    padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
+    background: var(--bg-tertiary); color: var(--text-muted); cursor: pointer; border: 1px solid transparent;
+  }
+  .feed-filter-btn.active { color: var(--text-primary); border-color: var(--border); }
+
+  .feed-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
+
+  .feed-entry {
+    padding: 6px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5;
+    display: flex; gap: 8px; align-items: flex-start;
+    border-left: 3px solid transparent;
+  }
+  .feed-entry:hover { background: rgba(255,255,255,0.02); }
+
+  .feed-entry.critical {
+    background: rgba(220,38,38,0.06);
+    border-left-color: var(--danger);
+  }
+  .feed-entry.warning-entry {
+    background: rgba(245,158,11,0.04);
+    border-left-color: var(--warning);
+  }
+
+  .feed-time { color: var(--text-muted); font-size: 11px; min-width: 52px; flex-shrink: 0; }
+  .feed-source { font-weight: 700; min-width: 56px; flex-shrink: 0; font-size: 11px; }
+  .feed-source.recon { color: var(--drone-recon); }
+  .feed-source.relay { color: var(--drone-relay); }
+  .feed-source.strike { color: var(--drone-strike); }
+  .feed-source.system { color: var(--text-muted); }
+  .feed-source.swarm { color: var(--status-rtl); }
+  .feed-source.operator { color: var(--drone-decoy); }
+  .feed-icon { font-size: 12px; min-width: 16px; text-align: center; }
+  .feed-msg { color: var(--text-secondary); flex: 1; word-break: break-word; }
+  .feed-msg .highlight { color: var(--text-primary); font-weight: 600; }
+
+  /* Feed input (operator commands) */
+  .feed-input-area {
+    padding: 10px 12px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .feed-input {
+    flex: 1; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 12px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; outline: none;
+  }
+  .feed-input::placeholder { color: var(--text-muted); }
+  .feed-send {
+    padding: 8px 14px; background: var(--bg-tertiary); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text-secondary); font-size: 12px; font-weight: 600;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+  }
+
+  /* Bottom Bar */
+  .bottom-bar {
+    height: 52px; background: var(--bg-secondary); border-top: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0;
+  }
+  .action-btn {
+    padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    font-family: 'Inter', sans-serif; cursor: pointer; border: 1px solid var(--border);
+    background: var(--bg-tertiary); color: var(--text-primary); display: flex; align-items: center; gap: 5px;
+  }
+  .action-btn.primary { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.3); color: var(--drone-recon); }
+  .action-btn.warning { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: var(--warning); }
+
+  /* ═══ MOBILE LAYOUT ═══ */
+  .mobile-frame {
+    width: 375px; height: 812px;
+    background: var(--bg-primary); border: 1px solid var(--border); border-radius: 40px;
+    overflow: hidden; display: flex; flex-direction: column;
+    padding-top: 44px; /* notch area */
+    position: relative;
+  }
+  .mobile-frame::before {
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 150px; height: 34px; background: #000; border-radius: 0 0 20px 20px; z-index: 10;
+  }
+
+  .mobile-topbar {
+    height: 44px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; justify-content: space-between; flex-shrink: 0;
+  }
+  .mobile-title { font-size: 15px; font-weight: 700; }
+  .mobile-estop { background: var(--danger-bg); border: 2px solid var(--danger); color: white; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; font-family: 'Inter',sans-serif; cursor: pointer; }
+  .mobile-status { display: flex; align-items: center; gap: 6px; }
+  .mobile-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; }
+  .mobile-status-text { font-size: 11px; color: var(--success); font-weight: 600; }
+
+  /* Mobile map thumbnail */
+  .mobile-map-thumb {
+    height: 180px; flex-shrink: 0; position: relative; overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-map-thumb .map-bg { width: 100%; height: 100%; }
+  .mobile-map-expand {
+    position: absolute; bottom: 8px; right: 8px;
+    background: rgba(26,29,39,0.9); border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 10px; font-size: 11px; color: var(--text-secondary); font-weight: 600;
+    font-family: 'Inter', sans-serif; cursor: pointer; backdrop-filter: blur(4px);
+  }
+  .mobile-drone-pips {
+    position: absolute; bottom: 8px; left: 8px; display: flex; gap: 4px;
+  }
+  .mobile-pip {
+    width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid white;
+  }
+  .mobile-pip.recon { background: var(--drone-recon); }
+  .mobile-pip.relay { background: var(--drone-relay); }
+  .mobile-pip.strike { background: var(--drone-strike); }
+
+  /* Mobile alert banner */
+  .mobile-alert {
+    background: rgba(220,38,38,0.9); padding: 8px 16px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; color: white; flex-shrink: 0;
+  }
+
+  /* Mobile feed (primary view) */
+  .mobile-feed { flex: 1; overflow-y: auto; }
+  .mobile-feed .feed-entry { padding: 8px 16px; font-size: 12px; }
+  .mobile-feed .feed-time { font-size: 10px; min-width: 44px; }
+  .mobile-feed .feed-source { font-size: 11px; min-width: 50px; }
+
+  /* Mobile bottom nav */
+  .mobile-nav {
+    height: 56px; background: var(--bg-secondary); border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-around; flex-shrink: 0;
+    padding-bottom: 8px; /* home indicator space */
+  }
+  .mobile-nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    font-size: 10px; color: var(--text-muted); cursor: pointer;
+  }
+  .mobile-nav-item.active { color: var(--text-primary); }
+  .mobile-nav-icon { font-size: 18px; }
+
+  /* Mobile feed input */
+  .mobile-feed-input {
+    padding: 8px 12px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+  }
+  .mobile-feed-input input {
+    flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 20px;
+    padding: 8px 14px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; outline: none;
+  }
+  .mobile-feed-input input::placeholder { color: var(--text-muted); }
+
+  /* Layout container for side-by-side */
+  .layout-row { display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; }
+
+  .page-section { margin-top: 80px; padding-top: 40px; border-top: 2px solid var(--border); }
+  .callout { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 20px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .callout strong { color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<h1>Drone Swarm Orchestrator</h1>
+<p class="subtitle">Ground Station Wireframes v2 — Mission Feed Concept</p>
+<div class="version-badge">v2 — FEED-FIRST DESIGN</div>
+
+<div class="callout">
+  <strong>Design concept:</strong> The Mission Feed is a persistent, real-time scrolling log — like a livestream chat crossed with a terminal.
+  On desktop, it lives as a right panel alongside the map. On mobile, it becomes the primary interface.
+  Critical alerts streak across the map as overlay banners. Operators read the mission like a radio log.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 class="screen-label">Desktop: 3-Column Layout (Fleet | Map | Feed)</h2>
+<p class="screen-desc">The main view. Fleet sidebar left, satellite map center, Mission Feed right. Alert overlays streak across the map for critical events. Operator can type commands directly into the feed.</p>
+
+<div class="desktop-frame">
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="tab active">Mission Control</div>
+    <div class="tab">Planner</div>
+    <div class="tab">Fleet</div>
+    <div class="tab">Pre-Flight</div>
+    <div class="tab">Telemetry</div>
+    <div class="tab">Replay</div>
+    <div class="topbar-center">
+      <div class="status-badge"><div class="status-dot"></div> ACTIVE</div>
+      <span class="timer">00:12:34</span>
+      <span class="drone-count">3/3 active</span>
+    </div>
+    <button class="estop">E-STOP</button>
+  </div>
+
+  <div class="main-3col">
+    <!-- Fleet Panel (Left) -->
+    <div class="fleet-panel">
+      <div class="fleet-header"><span>Fleet</span><span class="fleet-count">3/3</span></div>
+      <div class="drone-card recon selected">
+        <div class="drone-card-row1">
+          <span class="drone-id">ALPHA</span>
+          <div class="battery-indicator">87% <div class="battery-bar"><div class="battery-fill high"></div></div></div>
+        </div>
+        <div class="drone-card-row2"><span>Recon</span><span>12 sats</span><span>-42dBm</span></div>
+        <div class="drone-card-row3"><span class="status-pill airborne">AIRBORNE</span><span class="altitude">45m</span></div>
+      </div>
+      <div class="drone-card relay">
+        <div class="drone-card-row1">
+          <span class="drone-id">BRAVO</span>
+          <div class="battery-indicator">92% <div class="battery-bar"><div class="battery-fill mid"></div></div></div>
+        </div>
+        <div class="drone-card-row2"><span>Relay</span><span>10 sats</span><span>-38dBm</span></div>
+        <div class="drone-card-row3"><span class="status-pill airborne">AIRBORNE</span><span class="altitude">40m</span></div>
+      </div>
+      <div class="drone-card strike">
+        <div class="drone-card-row1">
+          <span class="drone-id">CHARLIE</span>
+          <div class="battery-indicator">78% <div class="battery-bar"><div class="battery-fill low"></div></div></div>
+        </div>
+        <div class="drone-card-row2"><span>Strike</span><span>11 sats</span><span>-56dBm</span></div>
+        <div class="drone-card-row3"><span class="status-pill airborne">AIRBORNE</span><span class="altitude">35m</span></div>
+      </div>
+    </div>
+
+    <!-- Map (Center) -->
+    <div class="map-area">
+      <div class="map-bg">
+        <div class="geofence-overlay" style="left:30px;top:20px;right:20px;bottom:20px;"></div>
+
+        <svg class="map-svg" viewBox="0 0 600 600">
+          <polyline points="180,200 200,220 225,240 250,255 280,265" stroke="#3B82F6" stroke-width="2" fill="none" opacity="0.4" stroke-linecap="round"/>
+          <polyline points="300,370 310,350 320,330 330,310 340,295" stroke="#22C55E" stroke-width="2" fill="none" opacity="0.4" stroke-linecap="round"/>
+          <polyline points="420,440 425,420 430,400 435,380 440,360" stroke="#EF4444" stroke-width="2" fill="none" opacity="0.4" stroke-linecap="round"/>
+          <line x1="350" y1="120" x2="410" y2="160" stroke="white" stroke-width="1" opacity="0.2" stroke-dasharray="5,4"/>
+          <line x1="410" y1="160" x2="470" y2="140" stroke="white" stroke-width="1" opacity="0.2" stroke-dasharray="5,4"/>
+          <line x1="470" y1="140" x2="510" y2="200" stroke="white" stroke-width="1" opacity="0.2" stroke-dasharray="5,4"/>
+        </svg>
+
+        <!-- Alert overlay (streaks across map) -->
+        <div class="alert-overlay">
+          <span class="alert-icon">&#9888;</span>
+          <span class="alert-text">CHARLIE battery critical (18%) — auto-RTL triggered</span>
+          <span class="alert-dismiss">dismiss</span>
+        </div>
+
+        <div style="position:absolute;left:270px;top:255px;"><div class="drone-marker-shape recon" style="transform:rotate(82deg);"></div><div class="drone-marker-label">ALPHA</div></div>
+        <div style="position:absolute;left:332px;top:285px;"><div class="drone-marker-shape relay" style="transform:rotate(145deg);"></div><div class="drone-marker-label">BRAVO</div></div>
+        <div style="position:absolute;left:432px;top:350px;"><div class="drone-marker-shape strike" style="transform:rotate(200deg);"></div><div class="drone-marker-label">CHARLIE</div></div>
+
+        <div class="waypoint done" style="position:absolute;left:339px;top:109px;">1</div>
+        <div class="waypoint done" style="position:absolute;left:399px;top:149px;">2</div>
+        <div class="waypoint active" style="position:absolute;left:459px;top:129px;">3</div>
+        <div class="waypoint" style="position:absolute;left:499px;top:189px;">4</div>
+
+        <div class="home-marker" style="position:absolute;left:140px;top:480px;">H</div>
+
+        <div class="map-controls">
+          <div class="map-ctrl-btn">+</div>
+          <div class="map-ctrl-btn">&minus;</div>
+          <div class="map-ctrl-btn" style="font-size:11px;">&#11036;</div>
+          <div class="map-ctrl-btn" style="font-size:11px;">~</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mission Feed (Right) -->
+    <div class="mission-feed">
+      <div class="feed-header">
+        <span>Mission Feed</span>
+        <div class="feed-filter">
+          <span class="feed-filter-btn active">All</span>
+          <span class="feed-filter-btn">Alerts</span>
+          <span class="feed-filter-btn">Cmds</span>
+        </div>
+      </div>
+      <div class="feed-scroll">
+        <div class="feed-entry critical">
+          <span class="feed-time">12:34</span>
+          <span class="feed-source system">SYSTEM</span>
+          <span class="feed-icon">&#9888;</span>
+          <span class="feed-msg"><span class="highlight">CHARLIE</span> battery critical (18%) — auto-RTL triggered</span>
+        </div>
+        <div class="feed-entry warning-entry">
+          <span class="feed-time">12:34</span>
+          <span class="feed-source swarm">SWARM</span>
+          <span class="feed-icon">&#8635;</span>
+          <span class="feed-msg">Replanning: CHARLIE waypoints 4-5 reassigned to <span class="highlight">ALPHA</span></span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:33</span>
+          <span class="feed-source recon">ALPHA</span>
+          <span class="feed-icon">&#9654;</span>
+          <span class="feed-msg">Waypoint <span class="highlight">3/7</span> reached</span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:33</span>
+          <span class="feed-source relay">BRAVO</span>
+          <span class="feed-icon">&#8644;</span>
+          <span class="feed-msg">Formation drift corrected +1.2m</span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:32</span>
+          <span class="feed-source operator">CMD</span>
+          <span class="feed-icon">&#9656;</span>
+          <span class="feed-msg">Operator: <span class="highlight">assign charlie strike</span></span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:31</span>
+          <span class="feed-source strike">CHARLIE</span>
+          <span class="feed-icon">&#9650;</span>
+          <span class="feed-msg">Role changed to <span class="highlight">STRIKE</span></span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:30</span>
+          <span class="feed-source swarm">SWARM</span>
+          <span class="feed-icon">&#9654;</span>
+          <span class="feed-msg">V-formation established, heading <span class="highlight">north</span></span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:29</span>
+          <span class="feed-source recon">ALPHA</span>
+          <span class="feed-icon">&#9650;</span>
+          <span class="feed-msg">Altitude <span class="highlight">45m</span> reached</span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:28</span>
+          <span class="feed-source relay">BRAVO</span>
+          <span class="feed-icon">&#9650;</span>
+          <span class="feed-msg">Altitude <span class="highlight">40m</span> reached</span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:28</span>
+          <span class="feed-source strike">CHARLIE</span>
+          <span class="feed-icon">&#9650;</span>
+          <span class="feed-msg">Altitude <span class="highlight">35m</span> reached</span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:27</span>
+          <span class="feed-source swarm">SWARM</span>
+          <span class="feed-icon">&#9654;</span>
+          <span class="feed-msg">All drones airborne — mission started</span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:26</span>
+          <span class="feed-source operator">CMD</span>
+          <span class="feed-icon">&#9656;</span>
+          <span class="feed-msg">Operator: <span class="highlight">takeoff all 45m</span></span>
+        </div>
+        <div class="feed-entry">
+          <span class="feed-time">12:25</span>
+          <span class="feed-source system">SYSTEM</span>
+          <span class="feed-icon">&#10003;</span>
+          <span class="feed-msg">Pre-flight complete — <span class="highlight">3/3 ready</span></span>
+        </div>
+      </div>
+      <div class="feed-input-area">
+        <input class="feed-input" type="text" placeholder="Type command...">
+        <button class="feed-send">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <button class="action-btn primary">&#9650; Takeoff All</button>
+    <button class="action-btn warning">&#8962; RTL All</button>
+    <button class="action-btn">&#9660; Land All</button>
+    <button class="action-btn">&#9208; Hold Formation</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="page-section">
+<h2 class="screen-label">Mobile: Feed-First Layout (iPhone)</h2>
+<p class="screen-desc">On phone, the Mission Feed is the primary view. The map is a collapsible thumbnail at the top — tap to expand fullscreen. Operators read the mission like a chat. Critical alerts banner at the top. Bottom nav for switching views.</p>
+
+<div class="layout-row">
+
+<!-- Phone wireframe -->
+<div class="mobile-frame">
+  <div class="mobile-topbar">
+    <div>
+      <div class="mobile-title">DSO</div>
+      <div class="mobile-status"><div class="mobile-status-dot"></div><span class="mobile-status-text">ACTIVE 00:12:34</span></div>
+    </div>
+    <button class="mobile-estop">E-STOP</button>
+  </div>
+
+  <!-- Map thumbnail -->
+  <div class="mobile-map-thumb">
+    <div class="map-bg">
+      <svg class="map-svg" viewBox="0 0 375 180">
+        <polyline points="100,80 120,90 140,95 160,100" stroke="#3B82F6" stroke-width="2" fill="none" opacity="0.5"/>
+        <polyline points="180,120 190,110 200,100 210,90" stroke="#22C55E" stroke-width="2" fill="none" opacity="0.5"/>
+        <polyline points="260,140 265,130 270,120 275,110" stroke="#EF4444" stroke-width="2" fill="none" opacity="0.5"/>
+      </svg>
+      <div style="position:absolute;left:155px;top:95px;"><div class="drone-marker-shape recon" style="transform:scale(0.8) rotate(82deg);"></div></div>
+      <div style="position:absolute;left:205px;top:85px;"><div class="drone-marker-shape relay" style="transform:scale(0.8) rotate(145deg);"></div></div>
+      <div style="position:absolute;left:270px;top:105px;"><div class="drone-marker-shape strike" style="transform:scale(0.8) rotate(200deg);"></div></div>
+    </div>
+    <div class="mobile-drone-pips">
+      <div class="mobile-pip recon"></div>
+      <div class="mobile-pip relay"></div>
+      <div class="mobile-pip strike"></div>
+    </div>
+    <div class="mobile-map-expand">&#8599; Expand Map</div>
+  </div>
+
+  <!-- Alert banner -->
+  <div class="mobile-alert">
+    <span>&#9888;</span>
+    <span>CHARLIE battery 18% — RTL</span>
+  </div>
+
+  <!-- Feed (primary view on mobile) -->
+  <div class="mobile-feed">
+    <div class="feed-entry critical">
+      <span class="feed-time">12:34</span>
+      <span class="feed-source system">SYS</span>
+      <span class="feed-msg"><span class="highlight">CHARLIE</span> batt critical — auto-RTL</span>
+    </div>
+    <div class="feed-entry warning-entry">
+      <span class="feed-time">12:34</span>
+      <span class="feed-source swarm">SWARM</span>
+      <span class="feed-msg">Replan: CHARLIE wps &#8594; <span class="highlight">ALPHA</span></span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:33</span>
+      <span class="feed-source recon">ALPHA</span>
+      <span class="feed-msg">Waypoint <span class="highlight">3/7</span> reached</span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:33</span>
+      <span class="feed-source relay">BRAVO</span>
+      <span class="feed-msg">Formation drift corrected +1.2m</span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:32</span>
+      <span class="feed-source operator">CMD</span>
+      <span class="feed-msg">Operator: <span class="highlight">assign charlie strike</span></span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:31</span>
+      <span class="feed-source strike">CHARLIE</span>
+      <span class="feed-msg">Role changed to <span class="highlight">STRIKE</span></span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:30</span>
+      <span class="feed-source swarm">SWARM</span>
+      <span class="feed-msg">V-formation established, heading north</span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:29</span>
+      <span class="feed-source recon">ALPHA</span>
+      <span class="feed-msg">Altitude <span class="highlight">45m</span> reached</span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:28</span>
+      <span class="feed-source relay">BRAVO</span>
+      <span class="feed-msg">Altitude <span class="highlight">40m</span> reached</span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:28</span>
+      <span class="feed-source strike">CHARLIE</span>
+      <span class="feed-msg">Altitude <span class="highlight">35m</span> reached</span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:27</span>
+      <span class="feed-source swarm">SWARM</span>
+      <span class="feed-msg">All drones airborne — mission started</span>
+    </div>
+    <div class="feed-entry">
+      <span class="feed-time">12:26</span>
+      <span class="feed-source operator">CMD</span>
+      <span class="feed-msg">Operator: <span class="highlight">takeoff all 45m</span></span>
+    </div>
+  </div>
+
+  <div class="mobile-feed-input">
+    <input type="text" placeholder="Command...">
+  </div>
+
+  <div class="mobile-nav">
+    <div class="mobile-nav-item active"><div class="mobile-nav-icon">&#9776;</div>Feed</div>
+    <div class="mobile-nav-item"><div class="mobile-nav-icon">&#9873;</div>Map</div>
+    <div class="mobile-nav-item"><div class="mobile-nav-icon">&#9881;</div>Fleet</div>
+    <div class="mobile-nav-item"><div class="mobile-nav-icon">&#9888;</div>Alerts</div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div style="height:80px;"></div>
+</body>
+</html>
