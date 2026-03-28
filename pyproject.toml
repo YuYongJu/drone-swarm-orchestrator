@@ -39,6 +39,7 @@ dev = [
     "pyyaml>=6.0",
     "scipy>=1.11",
     "numpy>=1.24",
+    "mkdocstrings[python]>=0.24",
 ]
 all = [
     "pyyaml>=6.0",

@@ -16,7 +16,6 @@ from drone_swarm.drone import (
 )
 from drone_swarm.swarm import SwarmOrchestrator
 
-
 # ---------------------------------------------------------------------------
 # --sitl CLI flag and automatic skip for @pytest.mark.sitl tests
 # ---------------------------------------------------------------------------

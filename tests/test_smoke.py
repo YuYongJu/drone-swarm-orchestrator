@@ -15,9 +15,6 @@ from __future__ import annotations
 
 import re
 
-import pytest
-
-
 # ---------------------------------------------------------------------------
 # 1. Public API imports
 # ---------------------------------------------------------------------------
@@ -273,10 +270,10 @@ class TestCLIParsing:
         assert rc == 0
 
     def test_main_version_returns_zero(self):
-        from drone_swarm.cli import cmd_version
-
         # Build a namespace manually to avoid SystemExit from --version flag
         import argparse
+
+        from drone_swarm.cli import cmd_version
 
         ns = argparse.Namespace()
         rc = cmd_version(ns)
