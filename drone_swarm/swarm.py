@@ -240,6 +240,12 @@ class SwarmOrchestrator:
     # -- State Machine ---------------------------------------------------------
 
     async def _transition(self, drone_id: str, new_status: DroneStatus) -> bool:
+        """Attempt a state-machine transition for a drone.
+
+        Returns ``True`` if the transition is valid and was applied,
+        ``False`` if it violates the state machine (no change made).
+        Thread-safe via per-drone asyncio locks.
+        """
         async with self._drone_locks[drone_id]:
             drone = self.drones[drone_id]
             allowed = VALID_TRANSITIONS.get(drone.status, set())
@@ -664,7 +670,13 @@ class SwarmOrchestrator:
                 self._mission_tasks[drone_id] = task
                 logger.info("Launched background mission for '%s'", drone_id)
 
-    async def _run_mission(self, drone_id: str):
+    async def _run_mission(self, drone_id: str) -> None:
+        """Execute a drone's assigned mission waypoints sequentially.
+
+        Respects collision avoidance overrides (pauses mission gotos while
+        avoidance manoeuvres are active). Aborts if the drone is LOST or
+        the orchestrator is shutting down.
+        """
         drone = self.drones[drone_id]
         try:
             for i, wp in enumerate(drone.mission):
@@ -690,7 +702,8 @@ class SwarmOrchestrator:
     async def _wait_until_reached(
         self, drone: Drone, wp: Waypoint,
         threshold_m: float | None = None, timeout_s: float = 120.0,
-    ):
+    ) -> None:
+        """Block until the drone is within *threshold_m* of *wp*, or timeout."""
         if threshold_m is None:
             threshold_m = self._config.waypoint_reach_threshold_m
         start = time.time()
@@ -711,6 +724,7 @@ class SwarmOrchestrator:
     # -- Status ----------------------------------------------------------------
 
     def status_report(self) -> str:
+        """Return a human-readable status summary for all registered drones."""
         lines = ["=== SWARM STATUS ==="]
         for d in self.drones.values():
             lines.append(
@@ -724,6 +738,7 @@ class SwarmOrchestrator:
     # -- Dynamic Replanning ----------------------------------------------------
 
     def active_drones(self) -> list[str]:
+        """Return IDs of all drones currently in AIRBORNE status."""
         return [d.drone_id for d in self.drones.values()
                 if d.status == DroneStatus.AIRBORNE]
 
