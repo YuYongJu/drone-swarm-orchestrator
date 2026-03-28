@@ -24,6 +24,7 @@ except ImportError:
 import contextlib
 
 from .anomaly import AnomalyDetector
+from .behavior import Behavior, BehaviorRegistry
 from .collision import CollisionAvoidance
 from .config import SwarmConfig
 from .drone import (
@@ -89,6 +90,8 @@ class SwarmOrchestrator:
         self._path_planning_obstacles: list[tuple[float, float, float]] | None = None
         # Anomaly detection state
         self._anomaly_detector: AnomalyDetector | None = None
+        # Behavior plugin registry
+        self._behavior_registry = BehaviorRegistry()
 
     # -- Anomaly Detection -----------------------------------------------------
 
@@ -109,6 +112,38 @@ class SwarmOrchestrator:
         """Disable anomaly detection."""
         self._anomaly_detector = None
         logger.info("Anomaly detection DISABLED")
+
+    # -- Behavior Plugins ------------------------------------------------------
+
+    async def add_behavior(self, behavior: Behavior) -> None:
+        """Register a behavior plugin on this swarm.
+
+        The behavior's ``setup()`` hook is called immediately. Its
+        ``on_tick()`` will run every telemetry cycle (~10 Hz).
+
+        Args:
+            behavior: A :class:`~drone_swarm.behavior.Behavior` instance.
+
+        Raises:
+            ValueError: If a behavior with the same name is already registered.
+        """
+        await self._behavior_registry.add(behavior, self)
+
+    async def remove_behavior(self, name: str) -> Behavior | None:
+        """Remove a behavior by name and call its ``teardown()`` hook.
+
+        Returns the removed behavior, or ``None`` if not found.
+        """
+        return await self._behavior_registry.remove(name, self)
+
+    def get_behavior(self, name: str) -> Behavior | None:
+        """Look up a registered behavior by name."""
+        return self._behavior_registry.get(name)
+
+    @property
+    def behaviors(self) -> list[Behavior]:
+        """All registered behaviors, sorted by priority (highest first)."""
+        return self._behavior_registry.behaviors
 
     # -- Geofence --------------------------------------------------------------
 
