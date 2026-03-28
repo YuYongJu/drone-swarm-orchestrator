@@ -24,6 +24,8 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from .geo import haversine as _haversine
+
 if TYPE_CHECKING:
     from .drone import Drone
 
@@ -115,23 +117,6 @@ class _DroneMetrics:
 
     def __post_init__(self) -> None:
         self.windows = {m: _RollingWindow(maxlen=self.window_size) for m in _TRACKED_METRICS}
-
-
-# ---------------------------------------------------------------------------
-# Haversine helper (metres between two GPS points)
-# ---------------------------------------------------------------------------
-
-def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    earth_r = 6_371_000.0
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = (
-        math.sin(dlat / 2) ** 2
-        + math.cos(math.radians(lat1))
-        * math.cos(math.radians(lat2))
-        * math.sin(dlon / 2) ** 2
-    )
-    return earth_r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 # ---------------------------------------------------------------------------

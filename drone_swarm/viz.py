@@ -194,7 +194,7 @@ async def start_map_server(
         def log_message(self, format, *args):
             pass  # suppress default request logging
 
-    server = HTTPServer(("0.0.0.0", port), Handler)
+    server = HTTPServer(("127.0.0.1", port), Handler)
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     logger.info("Map server running at http://localhost:%d", port)

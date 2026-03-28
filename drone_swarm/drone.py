@@ -48,6 +48,13 @@ class Waypoint:
     lon: float
     alt: float
 
+    def __post_init__(self):
+        if not -90 <= self.lat <= 90:
+            raise ValueError(f"lat must be in [-90, 90], got {self.lat}")
+        if not -180 <= self.lon <= 180:
+            raise ValueError(f"lon must be in [-180, 180], got {self.lon}")
+
+
 
 @dataclass
 class DroneCapabilities:
