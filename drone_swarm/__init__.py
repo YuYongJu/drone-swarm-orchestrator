@@ -89,6 +89,9 @@ from .simulation import SimulationHarness, SITLNotFoundError, SITLStartupError
 # Orchestrator (+ Swarm alias)
 from .swarm import Swarm, SwarmOrchestrator
 
+# Telemetry server
+from .telemetry_server import TelemetryServer
+
 # Visualization
 from .viz import start_map_server
 
@@ -138,7 +141,9 @@ __all__ = [
     # Config
     "SwarmConfig",
     "SwarmOrchestrator",
-    # Flight log (functions)
+    # Telemetry server
+    "TelemetryServer",
+    # Flight log
     "TelemetrySnapshot",
     "Waypoint",
     # Wind estimation
