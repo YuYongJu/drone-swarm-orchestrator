@@ -303,6 +303,10 @@ class SwarmOrchestrator:
     connect = connect_all
 
     async def _connect_drone(self, drone: Drone):
+        if mavutil is None:
+            raise ImportError(
+                "pymavlink is required. Install with: pip install pymavlink"
+            )
         loop = asyncio.get_running_loop()
         try:
             conn = await loop.run_in_executor(
@@ -365,17 +369,35 @@ class SwarmOrchestrator:
         return False
 
     async def _wait_for_gps(self, drone: Drone, timeout: float = 30.0):
-        """Wait until the telemetry loop reports a non-zero position (GPS lock)."""
+        """Wait until the telemetry loop reports a valid GPS lock (satellite count > 0)."""
         start = time.time()
         while time.time() - start < timeout:
-            # Check if telemetry has updated the position from 0,0
-            if drone.lat != 0.0 or drone.lon != 0.0:
-                logger.info("'%s' GPS position ready (%.6f, %.6f)",
-                            drone.drone_id, drone.lat, drone.lon)
+            if drone.gps_satellite_count > 0:
+                logger.info("'%s' GPS position ready (%.6f, %.6f, %d sats)",
+                            drone.drone_id, drone.lat, drone.lon,
+                            drone.gps_satellite_count)
                 return True
             await asyncio.sleep(1.0)
         logger.warning("'%s' GPS wait timed out after %ss", drone.drone_id, timeout)
         return False
+
+    async def _pause_telemetry(self) -> None:
+        """Pause the telemetry loop so MAVLink commands can read without racing."""
+        self._running = False
+        if self._telemetry_task and not self._telemetry_task.done():
+            self._telemetry_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._telemetry_task
+        await asyncio.sleep(0.5)
+
+    async def _restart_telemetry(self) -> None:
+        """Restart the telemetry loop and reset heartbeat timestamps."""
+        if not self._running:
+            now = time.time()
+            for d in self.drones.values():
+                d.last_heartbeat = now
+            self._running = True
+            self._telemetry_task = asyncio.create_task(telemetry_loop(self))
 
     async def takeoff(self, drone_id: str | None = None, altitude: float | None = None):
         """
@@ -392,18 +414,14 @@ class SwarmOrchestrator:
         await self._wait_for_gps(drone)
         # Pause telemetry loop so set_mode() and motors_armed_wait()
         # can read from the connection without racing
-        self._running = False
-        if self._telemetry_task and not self._telemetry_task.done():
-            self._telemetry_task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await self._telemetry_task
-        await asyncio.sleep(0.5)
+        await self._pause_telemetry()
 
         conn.set_mode("GUIDED")
         await asyncio.sleep(1.0)
         armed = await self.arm(drone_id)
         if not armed:
             logger.error("'%s' takeoff aborted — arming failed", drone_id)
+            await self._restart_telemetry()
             return
         conn.mav.command_long_send(
             conn.target_system, conn.target_component,
@@ -415,13 +433,7 @@ class SwarmOrchestrator:
         logger.info("'%s' taking off to %sm", drone_id, altitude)
 
         # Restart telemetry loop (was paused for arm sequence)
-        # Reset heartbeat timestamps so the loop doesn't immediately mark drones as LOST
-        if not self._running:
-            now = time.time()
-            for d in self.drones.values():
-                d.last_heartbeat = now
-            self._running = True
-            self._telemetry_task = asyncio.create_task(telemetry_loop(self))
+        await self._restart_telemetry()
 
     async def goto(self, drone_id: str, waypoint: Waypoint):
         drone = self.drones[drone_id]
@@ -433,8 +445,12 @@ class SwarmOrchestrator:
                 start, waypoint, self._path_planning_obstacles,
             )
             # Send each intermediate waypoint (skip the start position)
-            for wp in path[1:]:
+            for wp in path[1:-1]:
                 await self._send_goto(drone_id, wp)
+                await self._wait_until_reached(drone, wp)
+            # Send the final waypoint without waiting (caller decides)
+            if len(path) > 1:
+                await self._send_goto(drone_id, path[-1])
             return
 
         await self._send_goto(drone_id, waypoint)

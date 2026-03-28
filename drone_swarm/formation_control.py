@@ -204,6 +204,11 @@ class FormationController:
             i_north = prev_int[0] + gains.ki * err_north
             i_east = prev_int[1] + gains.ki * err_east
             i_down = prev_int[2] + gains.ki * err_down
+            # Anti-windup clamp
+            max_int = gains.max_correction_m / max(gains.ki, 1e-9)
+            i_north = max(-max_int, min(max_int, i_north))
+            i_east = max(-max_int, min(max_int, i_east))
+            i_down = max(-max_int, min(max_int, i_down))
             self._integral[drone_id] = (i_north, i_east, i_down)
 
             # --- D term (future) ---

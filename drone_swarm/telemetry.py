@@ -192,20 +192,23 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
             # (one goto per drone, not per-pair — avoids conflicting commands)
             if risks and ca.method == "orca" and len(airborne) >= 2:
                 orca_results = ca.compute_orca_velocities(airborne)
-                for drone_id, orca_vel in orca_results.items():
-                    if orca_vel.adjusted:
+                for orca_vel in orca_results:
+                    did = orca_vel.drone_id
+                    if did not in airborne:
+                        continue
+                    drone_obj = airborne[did]
+                    if abs(orca_vel.vn) > 1e-6 or abs(orca_vel.ve) > 1e-6:
                         try:
-                            from .drone import Waypoint
-                            wp = Waypoint(
-                                lat=orca_vel.target_lat,
-                                lon=orca_vel.target_lon,
-                                alt=airborne[drone_id].alt,
+                            from .collision import _offset_gps
+                            wp = _offset_gps(
+                                drone_obj.lat, drone_obj.lon, drone_obj.alt,
+                                orca_vel.vn * ca.dt, orca_vel.ve * ca.dt,
                             )
-                            await orchestrator.goto(drone_id, wp)
+                            await orchestrator.goto(did, wp)
                         except Exception:
                             logger.debug(
-                                "ORCA avoidance goto failed for '%s'",
-                                drone_id, exc_info=True,
+                                "ORCA goto failed for '%s'",
+                                did, exc_info=True,
                             )
             elif risks and ca.method == "repulsive":
                 # Fallback: per-pair repulsive avoidance
