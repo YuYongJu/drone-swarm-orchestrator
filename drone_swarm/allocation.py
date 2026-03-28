@@ -10,29 +10,15 @@ Requires ``scipy`` (install with ``pip install drone-swarm[allocation]``).
 from __future__ import annotations
 
 import logging
-import math
 from typing import TYPE_CHECKING
 
 from .drone import Drone, Waypoint
+from .geo import haversine as _haversine
 
 if TYPE_CHECKING:
     from .swarm import SwarmOrchestrator
 
 logger = logging.getLogger("drone_swarm.allocation")
-
-
-def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Return distance in meters between two GPS coordinates."""
-    earth_r = 6_371_000
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = (
-        math.sin(dlat / 2) ** 2
-        + math.cos(math.radians(lat1))
-        * math.cos(math.radians(lat2))
-        * math.sin(dlon / 2) ** 2
-    )
-    return earth_r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 def optimal_assign(

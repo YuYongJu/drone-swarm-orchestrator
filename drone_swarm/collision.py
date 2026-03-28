@@ -28,6 +28,7 @@ from dataclasses import dataclass
 from itertools import combinations
 
 from .drone import Drone, Waypoint
+from .geo import haversine
 
 logger = logging.getLogger("drone_swarm.collision")
 
@@ -56,23 +57,6 @@ class OrcaVelocity:
     drone_id: str
     vn: float  # north component (m/s)
     ve: float  # east component (m/s)
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Return the great-circle distance in metres between two GPS points."""
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = (
-        math.sin(dlat / 2) ** 2
-        + math.cos(math.radians(lat1))
-        * math.cos(math.radians(lat2))
-        * math.sin(dlon / 2) ** 2
-    )
-    return _EARTH_R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 def _offset_gps(lat: float, lon: float, alt: float, dn: float, de: float) -> Waypoint:

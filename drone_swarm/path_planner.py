@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from .drone import Drone, Waypoint
+from .geo import haversine as _haversine
 
 if TYPE_CHECKING:
     from .geofence import Geofence
@@ -36,19 +37,6 @@ _EARTH_R = 6_371_000.0
 # ---------------------------------------------------------------------------
 # Coordinate helpers
 # ---------------------------------------------------------------------------
-
-
-def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Great-circle distance in metres between two GPS points."""
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = (
-        math.sin(dlat / 2) ** 2
-        + math.cos(math.radians(lat1))
-        * math.cos(math.radians(lat2))
-        * math.sin(dlon / 2) ** 2
-    )
-    return _EARTH_R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 def _metres_per_deg_lat() -> float:

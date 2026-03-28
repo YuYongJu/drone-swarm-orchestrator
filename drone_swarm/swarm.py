@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import math
 import time
 from typing import TYPE_CHECKING
 
@@ -36,6 +35,7 @@ from .drone import (
     Waypoint,
 )
 from .formation_control import FormationController, FormationGains
+from .geo import haversine as _geo_haversine
 from .geofence import Geofence
 from .missions import area_sweep, line_formation, orbit_point, v_formation
 from .path_planner import PathPlanner
@@ -259,6 +259,8 @@ class SwarmOrchestrator:
         role: DroneRole = DroneRole.RECON,
         capabilities: DroneCapabilities | None = None,
     ):
+        if drone_id in self.drones:
+            logger.warning("Overwriting existing drone '%s'", drone_id)
         self.drones[drone_id] = Drone(
             drone_id=drone_id,
             connection_string=connection_string,
@@ -700,13 +702,7 @@ class SwarmOrchestrator:
 
     @staticmethod
     def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-        earth_r = 6371000
-        dlat = math.radians(lat2 - lat1)
-        dlon = math.radians(lon2 - lon1)
-        a = (math.sin(dlat / 2) ** 2
-             + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
-             * math.sin(dlon / 2) ** 2)
-        return earth_r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        return _geo_haversine(lat1, lon1, lat2, lon2)
 
     # -- Status ----------------------------------------------------------------
 
