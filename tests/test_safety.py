@@ -390,7 +390,7 @@ class TestEmergencyLand:
 
         mock_conn.set_mode.assert_called_once_with("LAND")
         assert orch._running is False
-        assert drone.status == DroneStatus.RETURNING
+        assert drone.status == DroneStatus.LANDING
 
     @pytest.mark.asyncio
     async def test_skips_disconnected_drones(self):

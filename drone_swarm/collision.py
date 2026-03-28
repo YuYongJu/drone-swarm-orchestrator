@@ -314,19 +314,61 @@ class CollisionAvoidance:
     # -- detection ----------------------------------------------------------
 
     def check_all_pairs(self, drones: dict[str, Drone]) -> list[CollisionRisk]:
-        """Return a :class:`CollisionRisk` for every pair closer than the threshold."""
+        """Return a :class:`CollisionRisk` for every pair closer than the threshold.
+
+        Uses spatial grid indexing for O(n) expected performance when drones
+        are spread out, falling back gracefully when clustered.
+        """
+        if len(drones) < 2:
+            return []
+
         risks: list[CollisionRisk] = []
-        for (id_a, drone_a), (id_b, drone_b) in combinations(drones.items(), 2):
-            dist = haversine(drone_a.lat, drone_a.lon, drone_b.lat, drone_b.lon)
-            if dist < self.min_distance_m:
-                risks.append(
-                    CollisionRisk(
-                        drone_a_id=id_a,
-                        drone_b_id=id_b,
-                        distance_m=dist,
-                        min_distance_m=self.min_distance_m,
-                    )
-                )
+
+        # For small swarms, brute-force is fine
+        if len(drones) <= 10:
+            for (id_a, drone_a), (id_b, drone_b) in combinations(drones.items(), 2):
+                dist = haversine(drone_a.lat, drone_a.lon, drone_b.lat, drone_b.lon)
+                if dist < self.min_distance_m:
+                    risks.append(CollisionRisk(id_a, id_b, dist, self.min_distance_m))
+            return risks
+
+        # Spatial grid: bucket drones by cell, only check neighbours
+        cell_size = self.min_distance_m
+        # Use first drone as reference for local NED conversion
+        items = list(drones.items())
+        ref_lat, ref_lon = items[0][1].lat, items[0][1].lon
+
+        grid: dict[tuple[int, int], list[tuple[str, Drone]]] = {}
+        for did, d in items:
+            dn, de = _gps_to_ned(ref_lat, ref_lon, d.lat, d.lon)
+            cr = math.floor(dn / cell_size)
+            cc = math.floor(de / cell_size)
+            grid.setdefault((cr, cc), []).append((did, d))
+
+        checked: set[tuple[str, str]] = set()
+        for (gr, gc), cell_drones in grid.items():
+            # Check within this cell and 8 neighbours
+            for dr in (-1, 0, 1):
+                for dc in (-1, 0, 1):
+                    neighbour_key = (gr + dr, gc + dc)
+                    neighbour_drones = grid.get(neighbour_key)
+                    if neighbour_drones is None:
+                        continue
+                    for id_a, drone_a in cell_drones:
+                        for id_b, drone_b in neighbour_drones:
+                            if id_a >= id_b:
+                                continue
+                            pair = (id_a, id_b)
+                            if pair in checked:
+                                continue
+                            checked.add(pair)
+                            dist = haversine(drone_a.lat, drone_a.lon,
+                                             drone_b.lat, drone_b.lon)
+                            if dist < self.min_distance_m:
+                                risks.append(CollisionRisk(
+                                    id_a, id_b, dist, self.min_distance_m,
+                                ))
+
         return risks
 
     # -- ORCA ---------------------------------------------------------------

@@ -95,10 +95,11 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
 
             await loop.run_in_executor(None, read_telemetry, drone)
 
-            # Heartbeat timeout -- only airborne drones can go LOST
+            # Heartbeat timeout -- only in-flight drones can go LOST
+            in_flight = (DroneStatus.AIRBORNE, DroneStatus.RETURNING, DroneStatus.LANDING)
             if (
                 time.time() - drone.last_heartbeat > orchestrator.HEARTBEAT_TIMEOUT
-                and drone.status in (DroneStatus.AIRBORNE, DroneStatus.RETURNING)
+                and drone.status in in_flight
             ):
                 transitioned = await orchestrator._transition(
                     drone.drone_id, DroneStatus.LOST
@@ -190,6 +191,7 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
 
             # Use whole-swarm ORCA to compute globally safe velocities
             # (one goto per drone, not per-pair — avoids conflicting commands)
+            override_until = time.time() + ca.dt
             if risks and ca.method == "orca" and len(airborne) >= 2:
                 orca_results = ca.compute_orca_velocities(airborne)
                 for orca_vel in orca_results:
@@ -204,6 +206,7 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
                                 drone_obj.lat, drone_obj.lon, drone_obj.alt,
                                 orca_vel.vn * ca.dt, orca_vel.ve * ca.dt,
                             )
+                            drone_obj._collision_override_until = override_until
                             await orchestrator.goto(did, wp)
                         except Exception:
                             logger.debug(
@@ -219,6 +222,8 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
                         drone_a, drone_b, ca.min_distance_m,
                     )
                     try:
+                        drone_a._collision_override_until = override_until
+                        drone_b._collision_override_until = override_until
                         await orchestrator.goto(risk.drone_a_id, wp_a)
                         await orchestrator.goto(risk.drone_b_id, wp_b)
                     except Exception:

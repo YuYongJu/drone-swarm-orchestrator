@@ -42,7 +42,7 @@ class TestDroneStatus:
     def test_has_all_expected_members(self):
         expected = {
             "DISCONNECTED", "CONNECTED", "ARMED",
-            "AIRBORNE", "RETURNING", "LANDED", "LOST",
+            "AIRBORNE", "RETURNING", "LANDING", "LANDED", "LOST",
         }
         assert {s.name for s in DroneStatus} == expected
 
@@ -60,6 +60,14 @@ class TestDroneStatus:
 
     def test_airborne_cannot_go_directly_to_landed(self):
         assert DroneStatus.LANDED not in VALID_TRANSITIONS[DroneStatus.AIRBORNE]
+
+    def test_airborne_can_reach_landing(self):
+        assert DroneStatus.LANDING in VALID_TRANSITIONS[DroneStatus.AIRBORNE]
+
+    def test_landing_can_reach_landed_or_lost(self):
+        allowed = VALID_TRANSITIONS[DroneStatus.LANDING]
+        assert DroneStatus.LANDED in allowed
+        assert DroneStatus.LOST in allowed
 
     def test_lost_can_recover_to_connected_or_disconnect(self):
         allowed = VALID_TRANSITIONS[DroneStatus.LOST]

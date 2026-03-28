@@ -507,7 +507,7 @@ class SwarmOrchestrator:
             mavutil.mavlink.MAV_CMD_DO_SET_MODE,
             0, 1, land_mode, 0, 0, 0, 0, 0,
         )
-        await self._transition(drone_id, DroneStatus.RETURNING)
+        await self._transition(drone_id, DroneStatus.LANDING)
         logger.info("'%s' landing", drone_id)
 
     # -- Emergency -------------------------------------------------------------
@@ -674,6 +674,10 @@ class SwarmOrchestrator:
                 if not self._running:
                     logger.warning("'%s' mission aborted -- orchestrator stopping", drone_id)
                     return
+                # Wait for collision avoidance override to expire before
+                # sending mission gotos (safety takes priority)
+                while drone._collision_override_until > time.time():
+                    await asyncio.sleep(0.1)
                 logger.info("'%s' mission waypoint %d/%d", drone_id, i + 1, len(drone.mission))
                 await self.goto(drone_id, wp)
                 await self._wait_until_reached(drone, wp)
@@ -787,7 +791,7 @@ class SwarmOrchestrator:
             with contextlib.suppress(asyncio.CancelledError):
                 await self._telemetry_task
         for drone_id, drone in self.drones.items():
-            if drone.status in (DroneStatus.AIRBORNE, DroneStatus.ARMED):
+            if drone.status in (DroneStatus.AIRBORNE, DroneStatus.ARMED, DroneStatus.LANDING):
                 await self.return_to_launch(drone_id)
         for drone in self.drones.values():
             if drone.connection:

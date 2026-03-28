@@ -92,7 +92,7 @@ class TestStateTransitions:
 
     @pytest.mark.asyncio
     async def test_airborne_to_landed_is_invalid(self):
-        """Drones must go through RETURNING before landing."""
+        """Drones must go through RETURNING or LANDING before landing."""
         orch = SwarmOrchestrator()
         orch.register_drone("alpha", "udp:127.0.0.1:14550")
         await orch._transition("alpha", DroneStatus.CONNECTED)
@@ -100,6 +100,19 @@ class TestStateTransitions:
         await orch._transition("alpha", DroneStatus.AIRBORNE)
         result = await orch._transition("alpha", DroneStatus.LANDED)
         assert result is False
+
+    @pytest.mark.asyncio
+    async def test_landing_lifecycle(self):
+        """Walk through AIRBORNE -> LANDING -> LANDED (land-in-place path)."""
+        orch = SwarmOrchestrator()
+        orch.register_drone("alpha", "udp:127.0.0.1:14550")
+        await orch._transition("alpha", DroneStatus.CONNECTED)
+        await orch._transition("alpha", DroneStatus.ARMED)
+        await orch._transition("alpha", DroneStatus.AIRBORNE)
+        result = await orch._transition("alpha", DroneStatus.LANDING)
+        assert result is True
+        result = await orch._transition("alpha", DroneStatus.LANDED)
+        assert result is True
 
     @pytest.mark.asyncio
     async def test_lost_recovery(self):

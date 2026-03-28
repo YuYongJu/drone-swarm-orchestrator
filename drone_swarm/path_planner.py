@@ -146,17 +146,26 @@ class PathPlanner:
             lon = mid_lon + east_m / m_per_lon
             return Waypoint(lat=lat, lon=lon, alt=alt)
 
+        # Pre-compute blocked cells from obstacles (O(O * R²) once,
+        # instead of O(O) per node expansion during A*)
+        blocked_cells: set[tuple[int, int]] = set()
+        for olat, olon, orad in obstacles:
+            oc_r, oc_c = to_grid(olat, olon)
+            radius_cells = math.ceil(orad / self.resolution_m)
+            for dr in range(-radius_cells, radius_cells + 1):
+                for dc in range(-radius_cells, radius_cells + 1):
+                    cell_dist = math.hypot(dr, dc) * self.resolution_m
+                    if cell_dist < orad:
+                        blocked_cells.add((oc_r + dr, oc_c + dc))
+
         def is_blocked(row: int, col: int) -> bool:
-            wp = to_gps(row, col, start.alt)
-            # Check obstacles
-            for olat, olon, orad in obstacles:
-                if _haversine(wp.lat, wp.lon, olat, olon) < orad:
-                    return True
-            # Check geofence
-            return (
-                self.geofence is not None
-                and not self.geofence.contains(wp.lat, wp.lon, wp.alt)
-            )
+            if (row, col) in blocked_cells:
+                return True
+            # Geofence check (cheap — O(V) where V = polygon vertices)
+            if self.geofence is not None:
+                wp = to_gps(row, col, start.alt)
+                return not self.geofence.contains(wp.lat, wp.lon, wp.alt)
+            return False
 
         start_cell = to_grid(start.lat, start.lon)
         goal_cell = to_grid(goal.lat, goal.lon)
@@ -183,10 +192,15 @@ class PathPlanner:
         heapq.heappush(open_set, (0.0, start_cell))
         came_from: dict[tuple[int, int], tuple[int, int] | None] = {start_cell: None}
         g_score: dict[tuple[int, int], float] = {start_cell: 0.0}
+        closed_set: set[tuple[int, int]] = set()
 
         found = False
         while open_set:
             _, current = heapq.heappop(open_set)
+
+            if current in closed_set:
+                continue
+            closed_set.add(current)
 
             if current == goal_cell:
                 found = True
@@ -197,6 +211,8 @@ class PathPlanner:
                 nr, nc = cr + dr, cc + dc
                 neighbour = (nr, nc)
 
+                if neighbour in closed_set:
+                    continue
                 if not in_bounds(nr, nc):
                     continue
                 if is_blocked(nr, nc):

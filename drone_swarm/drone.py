@@ -23,6 +23,7 @@ class DroneStatus(Enum):
     ARMED = "armed"
     AIRBORNE = "airborne"
     RETURNING = "returning"
+    LANDING = "landing"
     LANDED = "landed"
     LOST = "lost"
 
@@ -34,8 +35,9 @@ VALID_TRANSITIONS: dict[DroneStatus, set[DroneStatus]] = {
     DroneStatus.ARMED: {
         DroneStatus.AIRBORNE, DroneStatus.CONNECTED, DroneStatus.DISCONNECTED,
     },
-    DroneStatus.AIRBORNE:     {DroneStatus.RETURNING, DroneStatus.LOST},
+    DroneStatus.AIRBORNE:     {DroneStatus.RETURNING, DroneStatus.LANDING, DroneStatus.LOST},
     DroneStatus.RETURNING:    {DroneStatus.LANDED, DroneStatus.LOST},
+    DroneStatus.LANDING:      {DroneStatus.LANDED, DroneStatus.LOST},
     DroneStatus.LANDED:       {DroneStatus.CONNECTED, DroneStatus.DISCONNECTED},
     DroneStatus.LOST:         {DroneStatus.CONNECTED, DroneStatus.DISCONNECTED},
 }
@@ -102,3 +104,6 @@ class Drone:
     # Battery detail fields (from SYS_STATUS / BATTERY_STATUS)
     current_a: float = 0.0   # instantaneous current draw in amps
     voltage: float = 0.0     # battery voltage in volts
+    # Collision avoidance override: timestamp until which mission gotos are
+    # suppressed so avoidance manoeuvres take priority. 0.0 = no override.
+    _collision_override_until: float = 0.0
