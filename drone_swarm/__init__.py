@@ -42,6 +42,9 @@ from .anomaly import Anomaly, AnomalyDetector
 # Battery prediction
 from .battery import BatteryConfig, BatteryPredictor
 
+# Behavior plugin system
+from .behavior import Behavior, BehaviorEvent, BehaviorRegistry
+
 # Collision avoidance
 from .collision import CollisionAvoidance, CollisionRisk, OrcaVelocity
 
@@ -96,6 +99,10 @@ __all__ = [
     # Battery prediction
     "BatteryConfig",
     "BatteryPredictor",
+    # Behavior plugin system
+    "Behavior",
+    "BehaviorEvent",
+    "BehaviorRegistry",
     # Safety
     "CheckResult",
     # Collision avoidance

@@ -11,6 +11,7 @@ import logging
 import time
 from typing import TYPE_CHECKING
 
+from .behavior import BehaviorEvent
 from .collision import CollisionAvoidance
 from .drone import Drone, DroneStatus
 from .geofence import Geofence, GeofenceStatus
@@ -107,6 +108,9 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
                 if transitioned:
                     logger.error("LOST contact with '%s'!", drone.drone_id)
                     orchestrator.replan_on_loss(drone.drone_id)
+                    await _dispatch(orchestrator, BehaviorEvent(
+                        "drone_lost", drone.drone_id,
+                    ))
 
             # Auto-RTL on low battery (skip 0% -- SITL artefact)
             if (
@@ -118,6 +122,10 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
                 logger.warning("Low battery on '%s' (%.0f%%) -- RTL",
                                drone.drone_id, drone.battery_pct)
                 await orchestrator.return_to_launch(drone.drone_id)
+                await _dispatch(orchestrator, BehaviorEvent(
+                    "low_battery", drone.drone_id,
+                    {"battery_pct": drone.battery_pct},
+                ))
 
             # -- Health score update -------------------------------------------
             drone.health_score = compute_health_score(drone)
@@ -126,6 +134,10 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
                     "CRITICAL health on '%s': score=%.1f",
                     drone.drone_id, drone.health_score,
                 )
+                await _dispatch(orchestrator, BehaviorEvent(
+                    "health_critical", drone.drone_id,
+                    {"health_score": drone.health_score},
+                ))
             elif drone.health_score < 50:
                 logger.warning(
                     "Low health on '%s': score=%.1f",
@@ -290,4 +302,18 @@ async def telemetry_loop(orchestrator: "SwarmOrchestrator") -> None:
                     anomaly.message, anomaly.severity,
                 )
 
+        # -- Behavior plugin tick ------------------------------------------------
+        registry = getattr(orchestrator, "_behavior_registry", None)
+        if registry is not None:
+            await registry.tick(orchestrator, orchestrator.drones)
+
         await asyncio.sleep(0.1)
+
+
+async def _dispatch(
+    orchestrator: "SwarmOrchestrator", event: BehaviorEvent,
+) -> None:
+    """Dispatch a behavior event if the registry exists."""
+    registry = getattr(orchestrator, "_behavior_registry", None)
+    if registry is not None:
+        await registry.dispatch_event(orchestrator, event)
