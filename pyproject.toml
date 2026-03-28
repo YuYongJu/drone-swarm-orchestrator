@@ -49,7 +49,7 @@ all = [
 
 [project.urls]
 Homepage = "https://github.com/yuyongju/drone-swarm-orchestrator"
-Documentation = "https://github.com/yuyongju/drone-swarm-orchestrator#readme"
+Documentation = "https://yuyongju.github.io/drone-swarm-orchestrator/"
 Repository = "https://github.com/yuyongju/drone-swarm-orchestrator"
 Issues = "https://github.com/yuyongju/drone-swarm-orchestrator/issues"
 
