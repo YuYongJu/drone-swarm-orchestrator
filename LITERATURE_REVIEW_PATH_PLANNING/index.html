@@ -1,0 +1,3344 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python SDK for multi-drone swarm orchestration over MAVLink">
+      
+      
+      
+        <link rel="canonical" href="https://yuyongju.github.io/drone-swarm-orchestrator/LITERATURE_REVIEW_PATH_PLANNING/">
+      
+      
+        <link rel="prev" href="../ARCHITECTURE/">
+      
+      
+        <link rel="next" href="../literature-review-swarm-communication/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Path Planning Review - drone-swarm</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#literature-review-multi-drone-path-planning-and-trajectory-optimization" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="drone-swarm" class="md-header__button md-logo" aria-label="drone-swarm" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            drone-swarm
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Path Planning Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yuyongju/drone-swarm-orchestrator" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    drone-swarm-orchestrator
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="drone-swarm" class="md-nav__button md-logo" aria-label="drone-swarm" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    drone-swarm
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yuyongju/drone-swarm-orchestrator" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    drone-swarm-orchestrator
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/first-swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your First Swarm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/formations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formation Flying
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/custom-missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Missions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swarm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/drone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Drone
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Missions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--needs-review"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Path Planning Review
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Path Planning Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-dubins-paths-smooth-trajectories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Dubins Paths / Smooth Trajectories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Dubins Paths / Smooth Trajectories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-dubins-1957-the-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Dubins (1957) -- The Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-dubins-airplane-model-3d-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Dubins Airplane Model -- 3D Extension
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-recent-advances-3d-dubins-with-full-orientation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Recent Advances: 3D Dubins with Full Orientation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-trajectory-smoothing-for-uav-reference-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Trajectory Smoothing for UAV Reference Paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-a-and-rrt-for-drone-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. A* and RRT for Drone Path Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. A* and RRT for Drone Path Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-a-and-grid-based-planners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 A* and Grid-Based Planners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-rrt-asymptotically-optimal-sampling-based-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 RRT* -- Asymptotically Optimal Sampling-Based Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-informed-rrt-faster-convergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Informed RRT* -- Faster Convergence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-neural-informed-rrt-learning-enhanced-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Neural Informed RRT* -- Learning-Enhanced Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-multi-goal-rrt-for-uav-cooperative-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Multi-Goal RRT for UAV Cooperative Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-trajectory-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Trajectory Optimization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Trajectory Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-minimum-snap-trajectories-mellinger-kumar-2011" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Minimum Snap Trajectories -- Mellinger &amp; Kumar (2011)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-polynomial-trajectory-planning-for-dense-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Polynomial Trajectory Planning for Dense Environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-robust-and-efficient-quadrotor-trajectory-generation-fast-planner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Robust and Efficient Quadrotor Trajectory Generation (Fast-Planner)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-ego-planner-ego-swarm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 EGO-Planner / EGO-Swarm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-time-optimal-multi-drone-trajectory-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Time-Optimal Multi-Drone Trajectory Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-crazyswarm-crazyswarm2-the-reference-multi-drone-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 Crazyswarm / Crazyswarm2 -- The Reference Multi-Drone Platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-potential-field-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Potential Field Path Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Potential Field Path Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-classical-artificial-potential-fields-apf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Classical Artificial Potential Fields (APF)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-improved-apf-with-local-minima-escape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Improved APF with Local Minima Escape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-velocity-adaptive-apf-for-dynamic-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Velocity-Adaptive APF for Dynamic Environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-swarmpath-apf-impedance-control-for-drone-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 SwarmPath -- APF + Impedance Control for Drone Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-apf-sa-simulated-annealing-for-global-optimality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 APF-SA: Simulated Annealing for Global Optimality
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-decentralized-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Decentralized Path Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Decentralized Path Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-conflict-based-search-cbs-the-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Conflict-Based Search (CBS) -- The Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-kinodynamic-cbs-k-cbs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Kinodynamic CBS (K-CBS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-orca-decentralized-velocity-obstacle-avoidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 ORCA -- Decentralized Velocity Obstacle Avoidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-priority-based-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Priority-Based Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-multi-agent-reinforcement-learning-marl-for-drone-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Multi-Agent Reinforcement Learning (MARL) for Drone Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-energy-aware-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Energy-Aware Path Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Energy-Aware Path Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-energy-optimal-vs-distance-optimal-uav-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Energy-Optimal vs Distance-Optimal UAV Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-energy-aware-multi-uav-coverage-with-optimal-speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Energy-Aware Multi-UAV Coverage with Optimal Speed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-wind-aware-energy-efficient-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Wind-Aware Energy-Efficient Path Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-ecoflight-energy-efficient-a-through-obstacles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 EcoFlight -- Energy-Efficient A* Through Obstacles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-return-to-base-and-emergency-landing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Return-to-Base and Emergency Landing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-autonomous-recharging-and-mission-continuation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Autonomous Recharging and Mission Continuation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-dynamic-obstacle-avoidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Dynamic Obstacle Avoidance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Dynamic Obstacle Avoidance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-dpmpc-planner-predict-then-plan-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 DPMPC-Planner -- Predict-Then-Plan Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-dwa-3d-reactive-dynamic-window-for-drones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 DWA-3D -- Reactive Dynamic Window for Drones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-spot-spatio-temporal-obstacle-free-trajectory-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 SPOT -- Spatio-Temporal Obstacle-Free Trajectory Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-velocity-and-acceleration-obstacles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Velocity and Acceleration Obstacles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-intent-prediction-for-dynamic-avoidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Intent Prediction for Dynamic Avoidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-geofencing-and-airspace-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Geofencing and Airspace Compliance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Geofencing and Airspace Compliance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-dynamic-geofencing-for-uavs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Dynamic Geofencing for UAVs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-nasa-utm-unmanned-traffic-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 NASA UTM -- Unmanned Traffic Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-geofence-sizing-for-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Geofence Sizing for Safety
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-utm-security-challenges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 UTM Security Challenges
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-implementation-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Implementation Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Implementation Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-core-foundation-must-have" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Core Foundation (Must-Have)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-multi-drone-high-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Multi-Drone (High Priority)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-advanced-features-enhancement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Advanced Features (Enhancement)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-researchexperimental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Research/Experimental
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware-testbed-recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Testbed Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dubins-paths-smooth-trajectories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dubins Paths / Smooth Trajectories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-and-rrt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A* and RRT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trajectory-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trajectory Optimization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#potential-field-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Potential Field Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decentralized-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decentralized Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#energy-aware-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Energy-Aware Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-obstacle-avoidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic Obstacle Avoidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geofencing-and-airspace-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geofencing and Airspace Compliance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../literature-review-swarm-communication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swarm Communication Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/state-of-drone-swarm-software-2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State of Drone Swarm Software 2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-dubins-paths-smooth-trajectories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Dubins Paths / Smooth Trajectories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Dubins Paths / Smooth Trajectories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-dubins-1957-the-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Dubins (1957) -- The Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-dubins-airplane-model-3d-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Dubins Airplane Model -- 3D Extension
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-recent-advances-3d-dubins-with-full-orientation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Recent Advances: 3D Dubins with Full Orientation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-trajectory-smoothing-for-uav-reference-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Trajectory Smoothing for UAV Reference Paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-a-and-rrt-for-drone-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. A* and RRT for Drone Path Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. A* and RRT for Drone Path Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-a-and-grid-based-planners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 A* and Grid-Based Planners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-rrt-asymptotically-optimal-sampling-based-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 RRT* -- Asymptotically Optimal Sampling-Based Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-informed-rrt-faster-convergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Informed RRT* -- Faster Convergence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-neural-informed-rrt-learning-enhanced-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Neural Informed RRT* -- Learning-Enhanced Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-multi-goal-rrt-for-uav-cooperative-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Multi-Goal RRT for UAV Cooperative Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-trajectory-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Trajectory Optimization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Trajectory Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-minimum-snap-trajectories-mellinger-kumar-2011" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Minimum Snap Trajectories -- Mellinger &amp; Kumar (2011)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-polynomial-trajectory-planning-for-dense-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Polynomial Trajectory Planning for Dense Environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-robust-and-efficient-quadrotor-trajectory-generation-fast-planner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Robust and Efficient Quadrotor Trajectory Generation (Fast-Planner)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-ego-planner-ego-swarm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 EGO-Planner / EGO-Swarm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-time-optimal-multi-drone-trajectory-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Time-Optimal Multi-Drone Trajectory Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-crazyswarm-crazyswarm2-the-reference-multi-drone-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 Crazyswarm / Crazyswarm2 -- The Reference Multi-Drone Platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-potential-field-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Potential Field Path Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Potential Field Path Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-classical-artificial-potential-fields-apf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Classical Artificial Potential Fields (APF)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-improved-apf-with-local-minima-escape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Improved APF with Local Minima Escape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-velocity-adaptive-apf-for-dynamic-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Velocity-Adaptive APF for Dynamic Environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-swarmpath-apf-impedance-control-for-drone-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 SwarmPath -- APF + Impedance Control for Drone Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-apf-sa-simulated-annealing-for-global-optimality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 APF-SA: Simulated Annealing for Global Optimality
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-decentralized-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Decentralized Path Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Decentralized Path Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-conflict-based-search-cbs-the-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Conflict-Based Search (CBS) -- The Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-kinodynamic-cbs-k-cbs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Kinodynamic CBS (K-CBS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-orca-decentralized-velocity-obstacle-avoidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 ORCA -- Decentralized Velocity Obstacle Avoidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-priority-based-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Priority-Based Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-multi-agent-reinforcement-learning-marl-for-drone-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Multi-Agent Reinforcement Learning (MARL) for Drone Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-energy-aware-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Energy-Aware Path Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Energy-Aware Path Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-energy-optimal-vs-distance-optimal-uav-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Energy-Optimal vs Distance-Optimal UAV Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-energy-aware-multi-uav-coverage-with-optimal-speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Energy-Aware Multi-UAV Coverage with Optimal Speed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-wind-aware-energy-efficient-path-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Wind-Aware Energy-Efficient Path Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-ecoflight-energy-efficient-a-through-obstacles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 EcoFlight -- Energy-Efficient A* Through Obstacles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-return-to-base-and-emergency-landing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Return-to-Base and Emergency Landing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-autonomous-recharging-and-mission-continuation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Autonomous Recharging and Mission Continuation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-dynamic-obstacle-avoidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Dynamic Obstacle Avoidance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Dynamic Obstacle Avoidance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-dpmpc-planner-predict-then-plan-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 DPMPC-Planner -- Predict-Then-Plan Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-dwa-3d-reactive-dynamic-window-for-drones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 DWA-3D -- Reactive Dynamic Window for Drones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-spot-spatio-temporal-obstacle-free-trajectory-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 SPOT -- Spatio-Temporal Obstacle-Free Trajectory Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-velocity-and-acceleration-obstacles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Velocity and Acceleration Obstacles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-intent-prediction-for-dynamic-avoidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Intent Prediction for Dynamic Avoidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-geofencing-and-airspace-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Geofencing and Airspace Compliance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Geofencing and Airspace Compliance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-dynamic-geofencing-for-uavs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Dynamic Geofencing for UAVs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-nasa-utm-unmanned-traffic-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 NASA UTM -- Unmanned Traffic Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-geofence-sizing-for-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Geofence Sizing for Safety
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-utm-security-challenges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 UTM Security Challenges
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-implementation-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Implementation Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Implementation Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-core-foundation-must-have" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Core Foundation (Must-Have)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-multi-drone-high-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Multi-Drone (High Priority)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-advanced-features-enhancement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Advanced Features (Enhancement)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-researchexperimental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Research/Experimental
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware-testbed-recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Testbed Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dubins-paths-smooth-trajectories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dubins Paths / Smooth Trajectories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-and-rrt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A* and RRT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trajectory-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trajectory Optimization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#potential-field-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Potential Field Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decentralized-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decentralized Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#energy-aware-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Energy-Aware Planning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-obstacle-avoidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic Obstacle Avoidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geofencing-and-airspace-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geofencing and Airspace Compliance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="literature-review-multi-drone-path-planning-and-trajectory-optimization">Literature Review: Multi-Drone Path Planning and Trajectory Optimization<a class="headerlink" href="#literature-review-multi-drone-path-planning-and-trajectory-optimization" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-03-26
+<strong>Purpose:</strong> Comprehensive survey to guide path planning module upgrades for the Drone Swarm Orchestrator SDK.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#1-dubins-paths--smooth-trajectories">Dubins Paths / Smooth Trajectories</a></li>
+<li><a href="#2-a-and-rrt-for-drone-path-planning">A* and RRT for Drone Path Planning</a></li>
+<li><a href="#3-trajectory-optimization">Trajectory Optimization</a></li>
+<li><a href="#4-potential-field-path-planning">Potential Field Path Planning</a></li>
+<li><a href="#5-decentralized-path-planning">Decentralized Path Planning</a></li>
+<li><a href="#6-energy-aware-path-planning">Energy-Aware Path Planning</a></li>
+<li><a href="#7-dynamic-obstacle-avoidance">Dynamic Obstacle Avoidance</a></li>
+<li><a href="#8-geofencing-and-airspace-compliance">Geofencing and Airspace Compliance</a></li>
+<li><a href="#9-implementation-roadmap">Implementation Roadmap</a></li>
+</ol>
+<hr />
+<h2 id="1-dubins-paths-smooth-trajectories">1. Dubins Paths / Smooth Trajectories<a class="headerlink" href="#1-dubins-paths-smooth-trajectories" title="Permanent link">&para;</a></h2>
+<h3 id="11-dubins-1957-the-foundation">1.1 Dubins (1957) -- The Foundation<a class="headerlink" href="#11-dubins-1957-the-foundation" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Dubins, L.E. "On Curves of Minimal Length with a Constraint on Average Curvature, and with Prescribed Initial and Terminal Positions and Tangents." <em>American Journal of Mathematics</em>, 79, 497-516, 1957.</p>
+<p><strong>Summary:</strong> Proves that the shortest path between two oriented points (position + heading) for a vehicle with a bounded turning radius consists of at most three segments, each being either a straight line (S) or an arc of minimum turning radius (C). The optimal path is always one of six types: CSC (CLC, CRC, etc.) or CCC. This is the theoretical bedrock for all curvature-constrained path planning.</p>
+<p><strong>Complexity:</strong> O(1) for a single pair of configurations (closed-form solutions for all six candidate paths). Chaining N waypoints is O(N).</p>
+<p><strong>Real-drone results:</strong> Not originally for drones. 2D model, applicable to fixed-wing UAVs in the horizontal plane.</p>
+<p><strong>Implementation recommendation:</strong> Use the <code>dubins</code> Python library (PyPI) for 2D Dubins paths. Useful as a baseline smoother for waypoint-to-waypoint segments in fixed-wing or hybrid VTOL missions. Not directly suitable for multirotors (which can stop and turn in place) but valuable for generating smooth, flyable arcs when speed is maintained.</p>
+<hr />
+<h3 id="12-dubins-airplane-model-3d-extension">1.2 Dubins Airplane Model -- 3D Extension<a class="headerlink" href="#12-dubins-airplane-model-3d-extension" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Chitsaz, H. and LaValle, S.M. "Time-optimal paths for a Dubins airplane." <em>IEEE Conference on Decision and Control (CDC)</em>, 2007. Also: Owen, M., Beard, R.W., and McLain, T.W. "Implementing Dubins Airplane Paths on Fixed-Wing UAVs." <em>Handbook of Unmanned Aerial Vehicles</em>, Springer, 2014.</p>
+<p><strong>Summary:</strong> Extends Dubins paths to 3D by adding a bounded climb/descent rate to the turning-radius constraint. The 3D path is decomposed into a horizontal Dubins path plus altitude management via helical segments when the altitude change exceeds what can be achieved in a straight climb/descent. Three cases arise: low altitude (add spirals), medium altitude (standard), and high altitude (extend path with loops).</p>
+<p><strong>Complexity:</strong> O(1) per segment pair. Slightly more complex than 2D due to altitude case analysis.</p>
+<p><strong>Real-drone results:</strong> Validated on fixed-wing UAV platforms (ArduPilot-based). The vector-field guidance law for following Dubins airplane paths has been flight-tested.</p>
+<p><strong>Implementation recommendation:</strong> Implement for fixed-wing or VTOL cruise-mode planning. Use the altitude-case decomposition (low/medium/high) as described by Owen et al. For multirotors at speed, this provides smooth altitude transitions. Chain multiple Dubins airplane segments for multi-waypoint missions using heading-constrained waypoint sequences.</p>
+<hr />
+<h3 id="13-recent-advances-3d-dubins-with-full-orientation">1.3 Recent Advances: 3D Dubins with Full Orientation<a class="headerlink" href="#13-recent-advances-3d-dubins-with-full-orientation" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Kumar, D.P., Darbha, S., Manyam, S.G., and Casbeer, D. "A Novel Model for 3D Motion Planning for a Generalized Dubins Vehicle with Pitch and Yaw Rate Constraints." <em>arXiv:2509.24143</em>, 2025.</p>
+<p><strong>Summary:</strong> Generalizes the Dubins airplane to a full body-frame model with bounded pitch and yaw rates as two independent control inputs. Constructs shortest paths using Pontryagin's minimum principle. More realistic for fixed-wing UAVs where pitch and yaw are independently constrained.</p>
+<p><strong>Complexity:</strong> Higher than classic Dubins (numerical optimization for some path types), but still tractable for real-time use.</p>
+<p><strong>Real-drone results:</strong> Theoretical with numerical validation. No flight tests reported yet.</p>
+<p><strong>Implementation recommendation:</strong> Monitor for future library releases. For now, the classic Dubins airplane model is sufficient for SDK integration.</p>
+<hr />
+<h3 id="14-trajectory-smoothing-for-uav-reference-paths">1.4 Trajectory Smoothing for UAV Reference Paths<a class="headerlink" href="#14-trajectory-smoothing-for-uav-reference-paths" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2603.21713, "Simple Trajectory Smoothing for UAV Reference Path Planning Based on Decoupling, Spatial Modeling and Linear Programming," 2026.</p>
+<p><strong>Summary:</strong> Decouples 3D trajectory smoothing into spatial curve design and temporal parameterization. Uses linear programming for computational efficiency. Converts piecewise-linear waypoint paths into smooth, flyable trajectories.</p>
+<p><strong>Complexity:</strong> LP-based, polynomial time. Efficient for real-time replanning.</p>
+<p><strong>Real-drone results:</strong> Simulation-validated for UAV reference path scenarios.</p>
+<p><strong>Implementation recommendation:</strong> Good candidate for a post-processing smoothing layer that takes any waypoint path (from A*, RRT, etc.) and produces a smooth trajectory. Lightweight enough for onboard computation.</p>
+<hr />
+<h2 id="2-a-and-rrt-for-drone-path-planning">2. A* and RRT for Drone Path Planning<a class="headerlink" href="#2-a-and-rrt-for-drone-path-planning" title="Permanent link">&para;</a></h2>
+<h3 id="21-a-and-grid-based-planners">2.1 A* and Grid-Based Planners<a class="headerlink" href="#21-a-and-grid-based-planners" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Hart, P.E., Nilsson, N.J., and Raphael, B. "A Formal Basis for the Heuristic Determination of Minimum Cost Paths." <em>IEEE Transactions on Systems Science and Cybernetics</em>, 4(2), 100-107, 1968. Modern UAV survey: arXiv:2508.16515, "Comparative Analysis of UAV Path Planning Algorithms for Efficient Navigation in Urban 3D Environments," 2025.</p>
+<p><strong>Summary:</strong> A<em> searches a discretized grid/graph using a heuristic (typically Euclidean distance) to find the shortest path. In 3D, the grid becomes a voxel space. A</em> consistently offers shorter path lengths and faster generation times than RRT in structured 3D environments. However, A* struggles with high-dimensional spaces due to exponential memory growth (the curse of dimensionality -- O(b^d) where b is branching factor, d is depth).</p>
+<p><strong>Complexity:</strong> Time O(b^d), Space O(b^d). For a 3D grid of resolution r over volume V: nodes = V/r^3. At 1m resolution over a 500x500x100m volume, that is 25 million nodes -- feasible but memory-heavy.</p>
+<p><strong>Real-drone results:</strong> Extensively validated. A* is the default planner in many ArduPilot and PX4 mission planners for structured environments.</p>
+<p><strong>Implementation recommendation:</strong> Use A<em> (or its variant Theta</em> for any-angle paths) as the <strong>global planner</strong> for structured environments with known maps. Pair with a local planner for real-time obstacle avoidance. Use 3D occupancy grids at 1-2m resolution. For large outdoor areas, use hierarchical A* (coarse grid first, then refine).</p>
+<hr />
+<h3 id="22-rrt-asymptotically-optimal-sampling-based-planning">2.2 RRT* -- Asymptotically Optimal Sampling-Based Planning<a class="headerlink" href="#22-rrt-asymptotically-optimal-sampling-based-planning" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Karaman, S. and Frazzoli, E. "Sampling-based algorithms for optimal motion planning." <em>International Journal of Robotics Research</em>, 30(7), 846-894, 2011.</p>
+<p><strong>Summary:</strong> RRT* extends RRT with a rewiring step that reconnects the tree through lower-cost paths as more samples are added, guaranteeing convergence to the optimal path given infinite samples. Probabilistically complete and asymptotically optimal. Works in continuous space without discretization.</p>
+<p><strong>Complexity:</strong> Per-iteration: O(log n) for nearest-neighbor search with kd-trees. Convergence rate to optimal: slow (requires many iterations). Practical: 5,000-50,000 iterations for good paths in 3D.</p>
+<p><strong>Real-drone results:</strong> Widely used in autonomous drone racing (ETH Zurich), indoor navigation, and unknown environment exploration.</p>
+<p><strong>Implementation recommendation:</strong> Use RRT<em> as the </em><em>global planner for unstructured/unknown environments</em>* where a grid is impractical. Good for GPS-denied indoor flight, forest canopy navigation, and exploration missions.</p>
+<hr />
+<h3 id="23-informed-rrt-faster-convergence">2.3 Informed RRT* -- Faster Convergence<a class="headerlink" href="#23-informed-rrt-faster-convergence" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Gammell, J.D., Srinivasa, S.S., and Barfoot, T.D. "Informed RRT<em>: Optimal sampling-based path planning focused via direct sampling of an admissible ellipsoidal heuristic." </em>IEEE/RSJ IROS<em>, 2014. UAV extension: IEEE 8665162, "UAV Path Planning System Based on 3D Informed RRT</em> for Dynamic Obstacle Avoidance."</p>
+<p><strong>Summary:</strong> After finding an initial path, Informed RRT<em> restricts sampling to an ellipsoidal subset of the space defined by the current best path cost. This dramatically accelerates convergence to the optimal solution (often 10x fewer samples than vanilla RRT</em>).</p>
+<p><strong>Complexity:</strong> Same per-iteration as RRT*, but converges much faster. Practical: 1,000-10,000 iterations for near-optimal paths.</p>
+<p><strong>Real-drone results:</strong> Validated for 3D UAV obstacle avoidance with dynamic replanning.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Preferred over vanilla RRT* for all applications.</strong> The ellipsoidal sampling is trivial to implement and provides major speedups. Use as the default sampling-based planner in the SDK.</p>
+<hr />
+<h3 id="24-neural-informed-rrt-learning-enhanced-planning">2.4 Neural Informed RRT* -- Learning-Enhanced Planning<a class="headerlink" href="#24-neural-informed-rrt-learning-enhanced-planning" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2309.14595, "Neural Informed RRT*: Learning-based Path Planning with Point Cloud State Representations under Admissible Ellipsoidal Constraints," 2023.</p>
+<p><strong>Summary:</strong> Feeds point cloud data through PointNet++ to learn a sampling distribution within the Informed RRT* ellipsoid. The neural network guides sampling toward promising regions, reducing iterations by another order of magnitude in cluttered environments.</p>
+<p><strong>Complexity:</strong> Inference: ~5ms per sample on GPU. Training: requires dataset of solved planning problems.</p>
+<p><strong>Real-drone results:</strong> Simulation with point cloud environments. No flight tests reported.</p>
+<p><strong>Implementation recommendation:</strong> Future enhancement. Requires onboard GPU (Jetson-class). Flag for v2.0 of the path planning module.</p>
+<hr />
+<h3 id="25-multi-goal-rrt-for-uav-cooperative-planning">2.5 Multi-Goal RRT for UAV Cooperative Planning<a class="headerlink" href="#25-multi-goal-rrt-for-uav-cooperative-planning" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2504.11823, "Multi-goal Rapidly Exploring Random Tree with Safety and Dynamic Constraints for UAV Cooperative Path Planning," 2025.</p>
+<p><strong>Summary:</strong> Extends RRT to handle multiple UAVs with multiple goal locations simultaneously. Introduces safety corridors and dynamic constraints directly into the tree expansion, ensuring inter-drone separation and kinodynamic feasibility during planning rather than as a post-processing step.</p>
+<p><strong>Complexity:</strong> Scales with O(n * k) where n is tree size and k is number of drones. Practical for 5-20 drones.</p>
+<p><strong>Real-drone results:</strong> Simulation with up to 10 UAVs in obstacle-rich environments.</p>
+<p><strong>Implementation recommendation:</strong> Strong candidate for the multi-drone mission planner. The integrated safety constraints eliminate the need for a separate deconfliction layer.</p>
+<hr />
+<h2 id="3-trajectory-optimization">3. Trajectory Optimization<a class="headerlink" href="#3-trajectory-optimization" title="Permanent link">&para;</a></h2>
+<h3 id="31-minimum-snap-trajectories-mellinger-kumar-2011">3.1 Minimum Snap Trajectories -- Mellinger &amp; Kumar (2011)<a class="headerlink" href="#31-minimum-snap-trajectories-mellinger-kumar-2011" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Mellinger, D. and Kumar, V. "Minimum snap trajectory generation and control for quadrotors." <em>IEEE International Conference on Robotics and Automation (ICRA)</em>, 2011. IEEE 5980409.</p>
+<p><strong>Summary:</strong> The foundational paper for polynomial trajectory optimization for quadrotors. Exploits the differential flatness property of quadrotor dynamics: the full state (position, velocity, orientation, angular rates) can be derived from the flat outputs (x, y, z, yaw) and their derivatives. Since motor forces depend on the snap (4th derivative of position), minimizing snap produces smooth, dynamically feasible trajectories. Formulated as a quadratic program (QP) over piecewise polynomial coefficients.</p>
+<p><strong>Complexity:</strong> QP with O(N * p) variables where N is number of segments and p is polynomial order (typically 7-9). Solvable in milliseconds for typical missions (10-50 waypoints).</p>
+<p><strong>Real-drone results:</strong> Demonstrated aggressive quadrotor flight through narrow windows and gaps. The paper that launched a decade of polynomial trajectory research.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Must-implement. This is the core trajectory generator for the SDK.</strong> Use 7th-order (minimum snap) or 5th-order (minimum jerk) piecewise polynomials. Solve the QP using OSQP or similar. This should be the default trajectory representation for all multirotor missions.</p>
+<hr />
+<h3 id="32-polynomial-trajectory-planning-for-dense-environments">3.2 Polynomial Trajectory Planning for Dense Environments<a class="headerlink" href="#32-polynomial-trajectory-planning-for-dense-environments" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Richter, C., Bry, A., and Roy, N. "Polynomial trajectory planning for aggressive quadrotor flight in dense indoor environments." <em>International Symposium of Robotics Research (ISRR)</em>, 2013.</p>
+<p><strong>Summary:</strong> Extends Mellinger-Kumar by adding free intermediate waypoint derivatives (velocity, acceleration at waypoints are optimized, not fixed). Adds corridor constraints to keep trajectories within safe flight corridors. Uses unconstrained QP with closed-form solution for speed, then iteratively adjusts time allocation.</p>
+<p><strong>Complexity:</strong> Closed-form QP: O((N<em>p)^3) for matrix inversion, but N</em>p is typically small. Real-time capable.</p>
+<p><strong>Real-drone results:</strong> Aggressive indoor flight through cluttered rooms at high speed.</p>
+<p><strong>Implementation recommendation:</strong> Use this as an enhancement over basic Mellinger-Kumar. The free-derivative formulation produces better trajectories with the same computational cost. Implement corridor constraints for obstacle avoidance.</p>
+<hr />
+<h3 id="33-robust-and-efficient-quadrotor-trajectory-generation-fast-planner">3.3 Robust and Efficient Quadrotor Trajectory Generation (Fast-Planner)<a class="headerlink" href="#33-robust-and-efficient-quadrotor-trajectory-generation-fast-planner" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Zhou, B., Gao, F., Wang, L., Liu, C., and Shen, S. "Robust and efficient quadrotor trajectory generation for fast autonomous flight." <em>IEEE Robotics and Automation Letters</em>, 4(4), 3529-3536, 2019. arXiv:1907.01531.</p>
+<p><strong>Summary:</strong> Introduces a complete planning pipeline: (1) kinodynamic A* for a coarse initial path respecting dynamics, (2) B-spline trajectory optimization with gradient-based refinement for smoothness, obstacle clearance, and dynamic feasibility. The B-spline representation enables efficient local adjustment without affecting distant segments.</p>
+<p><strong>Complexity:</strong> Kinodynamic A*: O(n log n). B-spline optimization: converges in 5-20 iterations, ~10ms total.</p>
+<p><strong>Real-drone results:</strong> Real-time flight at up to 3 m/s in unknown environments with onboard sensing. One of the most-replicated results in drone planning.</p>
+<p><strong>Implementation recommendation:</strong> <strong>High priority. Implement the two-stage pipeline (kinodynamic search + B-spline optimization).</strong> The B-spline representation is more numerically stable than raw polynomials and supports efficient replanning. This is the architecture used by many successful autonomous drone systems.</p>
+<hr />
+<h3 id="34-ego-planner-ego-swarm">3.4 EGO-Planner / EGO-Swarm<a class="headerlink" href="#34-ego-planner-ego-swarm" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Zhou, X., Wang, Z., Ye, H., Xu, C., and Gao, F. "EGO-Planner: An ESDF-free Gradient-based Local Planner for Quadrotors." <em>IEEE Robotics and Automation Letters</em>, 6(2), 478-485, 2021. IEEE 9309347. Extension: Zhou, X. et al. "EGO-Swarm: A Fully Autonomous and Decentralized Quadrotor Swarm System in Cluttered Environments." arXiv:2011.04183.</p>
+<p><strong>Summary:</strong> Eliminates the expensive Euclidean Signed Distance Field (ESDF) computation that most gradient-based planners require. Instead, directly penalizes collisions by comparing the trajectory against a dynamically constructed collision-free guiding path. Only extracts obstacle information when the trajectory actually hits obstacles, dramatically reducing computation. EGO-Swarm extends this to multiple drones with decentralized planning and inter-drone collision avoidance.</p>
+<p><strong>Complexity:</strong> ~3ms per replanning cycle (vs ~50ms for ESDF-based planners). Supports 10+ Hz replanning.</p>
+<p><strong>Real-drone results:</strong> EGO-Swarm demonstrated fully autonomous decentralized flight of multiple quadrotors in dense forests and indoor environments using only onboard sensing. One of the strongest multi-drone results in the literature.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Top priority for the swarm module.</strong> EGO-Swarm provides the exact architecture needed: decentralized planning where each drone runs its own planner, shares trajectory broadcasts, and avoids both obstacles and other drones. Open-source code available.</p>
+<hr />
+<h3 id="35-time-optimal-multi-drone-trajectory-generation">3.5 Time-Optimal Multi-Drone Trajectory Generation<a class="headerlink" href="#35-time-optimal-multi-drone-trajectory-generation" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2402.18021, "Online Time-Optimal Trajectory Generation for Two Quadrotors with Multi-Waypoints Constraints," 2024.</p>
+<p><strong>Summary:</strong> Generates time-optimal (not just minimum-snap) trajectories for multiple quadrotors that must pass through shared waypoints without collision. Uses alternating optimization between trajectory shape and time allocation.</p>
+<p><strong>Complexity:</strong> Iterative optimization, ~100ms for 2-drone, 10-waypoint problems.</p>
+<p><strong>Real-drone results:</strong> Demonstrated with two quadrotors performing coordinated waypoint visits.</p>
+<p><strong>Implementation recommendation:</strong> Useful for time-critical multi-drone missions (racing, inspection). Implement as an optional "aggressive mode" trajectory generator.</p>
+<hr />
+<h3 id="36-crazyswarm-crazyswarm2-the-reference-multi-drone-platform">3.6 Crazyswarm / Crazyswarm2 -- The Reference Multi-Drone Platform<a class="headerlink" href="#36-crazyswarm-crazyswarm2-the-reference-multi-drone-platform" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Preiss, J.A., Honig, W., Sukhatme, G.S., and Ayanian, N. "Crazyswarm: A large nano-quadcopter swarm." <em>IEEE ICRA</em>, 2017. Crazyswarm2: imrclab.github.io/crazyswarm2/.</p>
+<p><strong>Summary:</strong> The de facto standard testbed for multi-drone research. Demonstrates swarms of up to 49 Crazyflie nano-quadcopters flying in tight formation with &lt;2cm tracking error. Uses polynomial trajectory upload, motion capture for state estimation, and a compressed broadcast communication architecture. Crazyswarm2 ports the system to ROS 2.</p>
+<p><strong>Complexity:</strong> System-level (not algorithmic). Supports real-time trajectory execution at 100Hz control rate.</p>
+<p><strong>Real-drone results:</strong> 49 drones in coordinated formation flight. Used at dozens of universities worldwide.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Use Crazyswarm2 as the primary hardware testbed for validating SDK algorithms.</strong> The Crazyflie platform is affordable (~$200/drone), well-documented, and has the largest open-source swarm codebase. Design the SDK's trajectory interface to be compatible with Crazyswarm2's polynomial trajectory format.</p>
+<hr />
+<h2 id="4-potential-field-path-planning">4. Potential Field Path Planning<a class="headerlink" href="#4-potential-field-path-planning" title="Permanent link">&para;</a></h2>
+<h3 id="41-classical-artificial-potential-fields-apf">4.1 Classical Artificial Potential Fields (APF)<a class="headerlink" href="#41-classical-artificial-potential-fields-apf" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Khatib, O. "Real-time obstacle avoidance for manipulators and mobile robots." <em>International Journal of Robotics Research</em>, 5(1), 90-98, 1986. Drone application: arXiv:2306.16276, "Path Planning with Potential Field-Based Obstacle Avoidance in a 3D Environment by an Unmanned Aerial Vehicle."</p>
+<p><strong>Summary:</strong> The goal generates an attractive potential (pulls the drone toward it), while obstacles generate repulsive potentials (push the drone away). The drone follows the negative gradient of the combined potential field. Simple, elegant, and fast -- but suffers from the classic local minima problem where attractive and repulsive forces cancel out, trapping the drone.</p>
+<p><strong>Complexity:</strong> O(n) per step where n is number of obstacles. Extremely fast, suitable for &gt;100Hz reactive control.</p>
+<p><strong>Real-drone results:</strong> Widely implemented on real drones for basic obstacle avoidance. The 3D extension has been validated in simulation and limited real-world tests.</p>
+<p><strong>Implementation recommendation:</strong> Use APF as the <strong>innermost reactive safety layer</strong> (the last line of defense). Do NOT use as the primary planner due to local minima. Pair with a global planner (A<em>, RRT</em>) and use APF only for real-time collision avoidance adjustments.</p>
+<hr />
+<h3 id="42-improved-apf-with-local-minima-escape">4.2 Improved APF with Local Minima Escape<a class="headerlink" href="#42-improved-apf-with-local-minima-escape" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> IEEE 11199033, "Improved Artificial Potential Field Method for UAV Path Planning," 2025.</p>
+<p><strong>Summary:</strong> Introduces three mechanisms to solve APF limitations: (1) a target-distance-weighted attractive function that prevents excessive pull at long range, (2) a local exploration factor that adds a random perturbation to escape local minima, and (3) a directional weighting factor to suppress path oscillations near obstacles.</p>
+<p><strong>Complexity:</strong> O(n) per step, marginally more expensive than classical APF due to the weighting calculations.</p>
+<p><strong>Real-drone results:</strong> Simulation-validated with significant improvement in success rate (95%+ vs 60-70% for classical APF).</p>
+<p><strong>Implementation recommendation:</strong> If APF is used as a reactive layer, implement these three improvements. The local exploration factor is particularly important -- without it, drones will get stuck between closely spaced obstacles.</p>
+<hr />
+<h3 id="43-velocity-adaptive-apf-for-dynamic-environments">4.3 Velocity-Adaptive APF for Dynamic Environments<a class="headerlink" href="#43-velocity-adaptive-apf-for-dynamic-environments" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2512.07609, "Obstacle Avoidance of UAV in Dynamic Environments Using Direction and Velocity-Adaptive Artificial Potential Field," 2025.</p>
+<p><strong>Summary:</strong> Dynamically scales the repulsive potential based on the drone's velocity vector relative to the obstacle's motion. When the drone moves toward an obstacle, repulsion increases; when moving away, it decreases. This velocity weighting prevents the force-cancellation that causes local minima, since the repulsive field is no longer purely position-dependent.</p>
+<p><strong>Complexity:</strong> O(n) per step. Requires velocity estimation for dynamic obstacles.</p>
+<p><strong>Real-drone results:</strong> Simulation with moving obstacles. Shows 30% reduction in near-miss events compared to classical APF.</p>
+<p><strong>Implementation recommendation:</strong> Implement for dynamic obstacle avoidance scenarios. The velocity-dependent repulsion is a clean, efficient enhancement that integrates naturally with the APF reactive layer.</p>
+<hr />
+<h3 id="44-swarmpath-apf-impedance-control-for-drone-swarms">4.4 SwarmPath -- APF + Impedance Control for Drone Swarms<a class="headerlink" href="#44-swarmpath-apf-impedance-control-for-drone-swarms" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2410.07848, "SwarmPath: Drone Swarm Navigation through Cluttered Environments Leveraging Artificial Potential Field and Impedance Control," 2024.</p>
+<p><strong>Summary:</strong> Combines APF with impedance control for swarm navigation. Drones create virtual mechanical links with nearby obstacles; the impedance controller regulates the "stiffness" and "damping" of these links, allowing drones to smoothly deform around obstacles rather than making sharp avoidance maneuvers. A virtual leader uses APF for global navigation while physical follower drones use impedance control for formation maintenance and local collision avoidance.</p>
+<p><strong>Complexity:</strong> O(n * k) per step where n is obstacles and k is swarm size. Real-time capable for 10-20 drones.</p>
+<p><strong>Real-drone results:</strong> Tested on real Crazyflie drones. 30% reduction in total travel time compared to conventional APF. Average 6% trajectory error between simulation and real-world.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Strong candidate for the swarm formation module.</strong> The impedance control paradigm naturally handles the tension between formation keeping and obstacle avoidance. The 6% sim-to-real gap is excellent. Consider this for tight-formation missions (inspection, mapping).</p>
+<hr />
+<h3 id="45-apf-sa-simulated-annealing-for-global-optimality">4.5 APF-SA: Simulated Annealing for Global Optimality<a class="headerlink" href="#45-apf-sa-simulated-annealing-for-global-optimality" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2501.09338, "Robust UAV Path Planning with Obstacle Avoidance for Emergency Rescue," 2025.</p>
+<p><strong>Summary:</strong> Combines APF with simulated annealing (SA) to escape local minima and converge to globally optimal solutions. The SA component periodically accepts worse solutions with decreasing probability, enabling the planner to explore beyond local minima basins.</p>
+<p><strong>Complexity:</strong> O(n * T) where T is the SA cooling schedule length. Slower than pure APF but guarantees escape from local minima.</p>
+<p><strong>Real-drone results:</strong> Validated for emergency rescue path planning scenarios in simulation.</p>
+<p><strong>Implementation recommendation:</strong> Consider for offline mission planning where APF-style paths are desired but global optimality matters. Not suitable for real-time reactive control due to SA overhead.</p>
+<hr />
+<h2 id="5-decentralized-path-planning">5. Decentralized Path Planning<a class="headerlink" href="#5-decentralized-path-planning" title="Permanent link">&para;</a></h2>
+<h3 id="51-conflict-based-search-cbs-the-foundation">5.1 Conflict-Based Search (CBS) -- The Foundation<a class="headerlink" href="#51-conflict-based-search-cbs-the-foundation" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Sharon, G., Stern, R., Felner, A., and Sturtevant, N. "Conflict-based search for optimal multi-agent pathfinding." <em>Artificial Intelligence</em>, 219, 40-66, 2015.</p>
+<p><strong>Summary:</strong> CBS is a two-level algorithm for multi-agent pathfinding (MAPF). The <strong>low level</strong> plans optimal paths for individual agents independently (using A<em>). The </em><em>high level</em><em> searches a Conflict Tree (CT): when two agents' paths conflict (same location at same time), CBS branches -- in one child, agent A is constrained to avoid the conflict; in the other, agent B is constrained. This continues until a conflict-free solution is found. CBS is </em><em>optimal</em>* -- it finds the minimum-cost solution.</p>
+<p><strong>Complexity:</strong> Worst case exponential in number of agents. In practice, much faster than joint-space A* because most agent pairs don't conflict. Handles 50-100 agents in grid worlds.</p>
+<p><strong>Real-drone results:</strong> Originally for grid-based MAPF. Extended to continuous spaces and kinodynamic drones (K-CBS).</p>
+<p><strong>Implementation recommendation:</strong> <strong>Implement CBS as the centralized multi-drone deconfliction algorithm.</strong> Use it for mission planning (offline or near-real-time). The two-level structure is elegant: swap in any single-drone planner at the low level. For real-time operation, use the bounded-suboptimal variant (ECBS) which trades optimality for speed.</p>
+<hr />
+<h3 id="52-kinodynamic-cbs-k-cbs">5.2 Kinodynamic CBS (K-CBS)<a class="headerlink" href="#52-kinodynamic-cbs-k-cbs" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2207.00576, "Conflict-based Search for Multi-Robot Motion Planning with Kinodynamic Constraints," 2022.</p>
+<p><strong>Summary:</strong> Extends CBS to handle agents with kinodynamic constraints (bounded velocity, acceleration, turning rate) rather than simple grid movement. The low-level planner uses kinodynamic RRT<em> instead of A</em>. Conflicts are detected in continuous space-time.</p>
+<p><strong>Complexity:</strong> More expensive than grid CBS due to continuous-space collision checking. Practical for 5-15 drones with kinodynamic constraints.</p>
+<p><strong>Real-drone results:</strong> Simulation with quadrotor dynamics models.</p>
+<p><strong>Implementation recommendation:</strong> Use for multi-drone missions where dynamic feasibility of paths matters (fast flight, aggressive maneuvers). The integration of CBS with kinodynamic planning is the right architecture for real drones.</p>
+<hr />
+<h3 id="53-orca-decentralized-velocity-obstacle-avoidance">5.3 ORCA -- Decentralized Velocity Obstacle Avoidance<a class="headerlink" href="#53-orca-decentralized-velocity-obstacle-avoidance" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> van den Berg, J., Lin, M., and Manocha, D. "Reciprocal Velocity Obstacles for Real-Time Multi-Agent Navigation." <em>IEEE ICRA</em>, 2008. Voronoi extension: arXiv:2102.13281, "V-RVO: Decentralized Multi-Agent Collision Avoidance using Voronoi Diagrams."</p>
+<p><strong>Summary:</strong> Each agent computes a set of velocities that would lead to collision with other agents (the velocity obstacle). ORCA assumes all agents follow the same reciprocal avoidance protocol, so each agent only needs to adjust by half the required avoidance. V-RVO further constrains agents to their Voronoi cell for guaranteed safety even with double-integrator dynamics.</p>
+<p><strong>Complexity:</strong> O(k^2) per agent where k is number of nearby agents. Very fast for real-time decentralized control.</p>
+<p><strong>Real-drone results:</strong> ORCA has been validated on ground robots extensively. V-RVO includes quadrotor simulation. DCAD (Decentralized Collision Avoidance with Dynamics) tested in PX4 SITL.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Implement ORCA as the decentralized collision avoidance layer.</strong> This runs on each drone independently, requires only position/velocity broadcasts from neighbors, and provides real-time safety. Use V-RVO variant if double-integrator dynamics are needed for smoother avoidance.</p>
+<hr />
+<h3 id="54-priority-based-planning">5.4 Priority-Based Planning<a class="headerlink" href="#54-priority-based-planning" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> Erdmann, M. and Lozano-Perez, T. "On multiple moving objects." <em>Algorithmica</em>, 2, 477-521, 1987. Modern multi-drone: arXiv:2109.08403, "Robust Trajectory Planning for Spatial-Temporal Multi-Drone Coordination in Large Scenes."</p>
+<p><strong>Summary:</strong> Assign each drone a priority (based on task urgency, proximity to goal, etc.). Higher-priority drones plan first; lower-priority drones treat higher-priority drone trajectories as moving obstacles. Simple, fast, but suboptimal -- poor priority orderings can lead to deadlocks or highly inefficient paths.</p>
+<p><strong>Complexity:</strong> O(k * T_single) where k is number of drones and T_single is single-drone planning time. Linear scaling with swarm size.</p>
+<p><strong>Real-drone results:</strong> Used in large-scale drone shows (100+ drones) where optimality is less important than scalability and predictability.</p>
+<p><strong>Implementation recommendation:</strong> Use as a <strong>fallback/scalability mode</strong> when CBS is too slow (&gt;20 drones). Implement with dynamic priority reassignment to mitigate poor orderings. Good for drone show choreography and large-scale survey missions.</p>
+<hr />
+<h3 id="55-multi-agent-reinforcement-learning-marl-for-drone-swarms">5.5 Multi-Agent Reinforcement Learning (MARL) for Drone Swarms<a class="headerlink" href="#55-multi-agent-reinforcement-learning-marl-for-drone-swarms" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2406.04159, "MARLander: A Local Path Planning for Drone Swarms using Multiagent Deep Reinforcement Learning," 2024. Also: arXiv:2312.06250, "Robust and Decentralized Reinforcement Learning for UAV Path Planning in IoT Networks."</p>
+<p><strong>Summary:</strong> Each drone learns a decentralized policy that maps local observations (own state, nearby drones, obstacles) to actions. Training uses centralized critic with decentralized actors (CTDE paradigm). Once trained, each drone runs its policy independently with no communication required.</p>
+<p><strong>Complexity:</strong> Training: expensive (millions of episodes). Inference: O(1) forward pass per drone per timestep (~1ms on embedded GPU).</p>
+<p><strong>Real-drone results:</strong> MARLander demonstrated sim-to-real transfer on Crazyflie drones. Gap between simulation and real-world performance remains a challenge.</p>
+<p><strong>Implementation recommendation:</strong> Research-stage for production swarms. Include as an experimental module. The sim-to-real gap is the main barrier. Useful for specialized scenarios (landing, formation flight) where a policy can be pre-trained.</p>
+<hr />
+<h2 id="6-energy-aware-path-planning">6. Energy-Aware Path Planning<a class="headerlink" href="#6-energy-aware-path-planning" title="Permanent link">&para;</a></h2>
+<h3 id="61-energy-optimal-vs-distance-optimal-uav-planning">6.1 Energy-Optimal vs Distance-Optimal UAV Planning<a class="headerlink" href="#61-energy-optimal-vs-distance-optimal-uav-planning" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2410.17585, "Energy-Optimal Planning of Waypoint-Based UAV Missions - Does Minimum Distance Mean Minimum Energy?", 2024.</p>
+<p><strong>Summary:</strong> Demonstrates that minimum-distance paths are NOT minimum-energy paths for quadrotors. Energy consumption depends on speed profile, altitude changes, wind, and hover time. A drone flying a longer but flatter path may use less energy than a shorter path with altitude changes. The paper formulates energy-optimal waypoint ordering as a variant of the Traveling Salesman Problem with energy costs.</p>
+<p><strong>Complexity:</strong> TSP-based, NP-hard. Solved with heuristics for practical mission sizes (10-50 waypoints).</p>
+<p><strong>Real-drone results:</strong> Validated with energy models calibrated against real DJI quadrotor flight data. Energy savings of 15-30% over distance-optimal paths.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Integrate an energy cost model into the path planner.</strong> Replace Euclidean distance heuristics with energy-based costs that account for altitude, speed, and wind. This is a relatively easy modification to A<em>/RRT</em> that yields significant real-world benefits.</p>
+<hr />
+<h3 id="62-energy-aware-multi-uav-coverage-with-optimal-speed">6.2 Energy-Aware Multi-UAV Coverage with Optimal Speed<a class="headerlink" href="#62-energy-aware-multi-uav-coverage-with-optimal-speed" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2402.10529, "Energy-aware Multi-UAV Coverage Mission Planning with Optimal Speed of Flight," 2024.</p>
+<p><strong>Summary:</strong> For coverage missions (mapping, inspection), computes the optimal flight speed that maximizes area covered per battery charge. The optimal speed is not the maximum speed (high drag) or the minimum speed (high hover power), but a specific intermediate speed that depends on the drone's mass, rotor efficiency, and air density. Integrates this into multi-drone task allocation.</p>
+<p><strong>Complexity:</strong> Speed optimization is closed-form. Task allocation uses auction-based methods, O(k * n) for k drones and n tasks.</p>
+<p><strong>Real-drone results:</strong> Validated with energy models. Optimal speed calculation matches empirical measurements.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Compute and store optimal cruise speed for each drone type in the SDK configuration.</strong> Use this speed as the default for mission planning. Allow override for time-critical missions.</p>
+<hr />
+<h3 id="63-wind-aware-energy-efficient-path-planning">6.3 Wind-Aware Energy-Efficient Path Planning<a class="headerlink" href="#63-wind-aware-energy-efficient-path-planning" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2004.00182, "Energy-Efficiency Path Planning for Quadrotor UAV Under Wind Conditions."</p>
+<p><strong>Summary:</strong> Models wind as a spatially varying vector field and optimizes trajectories to exploit tailwinds and avoid headwinds. By adjusting the yaw angle relative to the wind vector, a quadrotor can improve its range by 30% on the same battery. The planner generates energy-optimal paths through a known wind field using graph search with energy-weighted edges.</p>
+<p><strong>Complexity:</strong> Same as A* with modified edge weights. Requires a wind field model (from weather data or onboard anemometer).</p>
+<p><strong>Real-drone results:</strong> Simulation with realistic wind models. The 30% improvement is consistent across scenarios.</p>
+<p><strong>Implementation recommendation:</strong> Integrate wind data (from weather APIs or onboard sensors) into the energy cost model. Even a simple constant-wind model provides significant benefits. For outdoor missions, query wind forecasts at mission planning time and adjust paths accordingly.</p>
+<hr />
+<h3 id="64-ecoflight-energy-efficient-a-through-obstacles">6.4 EcoFlight -- Energy-Efficient A* Through Obstacles<a class="headerlink" href="#64-ecoflight-energy-efficient-a-through-obstacles" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2511.12618, "EcoFlight: Finding Low-Energy Paths Through Obstacles for Autonomous Sensing Drones," 2025.</p>
+<p><strong>Summary:</strong> An A*-based planner that uses energy (not distance) as the primary cost metric. Incorporates altitude changes, flight speed, and acceleration into edge costs. Dynamically selects optimal speed for each path segment based on terrain and obstacles.</p>
+<p><strong>Complexity:</strong> Same as A* with energy-weighted edges. Marginal overhead for energy computation.</p>
+<p><strong>Real-drone results:</strong> Validated in obstacle-rich environments (forests, urban canyons). Significant energy savings in environments with altitude variation.</p>
+<p><strong>Implementation recommendation:</strong> Use as the energy-aware variant of the A<em> global planner. The key insight (energy-weighted edges) is straightforward to implement on top of existing A</em> infrastructure.</p>
+<hr />
+<h3 id="65-return-to-base-and-emergency-landing">6.5 Return-to-Base and Emergency Landing<a class="headerlink" href="#65-return-to-base-and-emergency-landing" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> IEEE 10397242, "How to Save a Drone in Case of Low Battery? A New Algorithm for Determining Safe Landing," 2024. Also: arXiv:2505.20423, "Vision-Based Risk Aware Emergency Landing for UAVs in Complex Urban Environments," 2025.</p>
+<p><strong>Summary:</strong> Addresses the critical safety problem of what to do when battery is low. Uses depth camera data with RANSAC and KD-Tree methods to identify safe landing surfaces in real-time. The risk-aware system uses semantic segmentation to evaluate hazards and identifies Safe Landing Zones (SLZ) with altitude-dependent safety thresholds. Emergency landing decisions factor in remaining battery, distance to base, wind conditions, and terrain safety.</p>
+<p><strong>Complexity:</strong> RANSAC surface detection: O(n) per frame. Semantic segmentation: ~30ms on Jetson Nano.</p>
+<p><strong>Real-drone results:</strong> Validated on real drones with depth cameras. Reduces landing time by performing short maneuvers toward nearest safe surface.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Must-implement for safety.</strong> The SDK needs: (1) continuous battery monitoring with return-to-base threshold, (2) precomputed emergency landing zones along the route, (3) real-time safe surface detection as a fallback. This is a regulatory requirement for most commercial drone operations.</p>
+<hr />
+<h3 id="66-autonomous-recharging-and-mission-continuation">6.6 Autonomous Recharging and Mission Continuation<a class="headerlink" href="#66-autonomous-recharging-and-mission-continuation" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:1703.10049, "Autonomous Recharging and Flight Mission Planning for Battery-operated Autonomous Drones," 2017.</p>
+<p><strong>Summary:</strong> Plans multi-leg missions where drones autonomously return to charging stations, recharge, and continue the mission. The planner jointly optimizes mission waypoint ordering and charging station visits to minimize total mission time.</p>
+<p><strong>Complexity:</strong> Mixed-integer programming for joint optimization. Heuristic solutions for real-time.</p>
+<p><strong>Real-drone results:</strong> Demonstrated with autonomous landing on charging pads.</p>
+<p><strong>Implementation recommendation:</strong> Design the mission planner to be "battery-aware" from the start. Each mission plan should include explicit battery checkpoints and designated return-to-charge waypoints. Support for battery-swap stations and wireless charging pads.</p>
+<hr />
+<h2 id="7-dynamic-obstacle-avoidance">7. Dynamic Obstacle Avoidance<a class="headerlink" href="#7-dynamic-obstacle-avoidance" title="Permanent link">&para;</a></h2>
+<h3 id="71-dpmpc-planner-predict-then-plan-framework">7.1 DPMPC-Planner -- Predict-Then-Plan Framework<a class="headerlink" href="#71-dpmpc-planner-predict-then-plan-framework" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2109.07024, Xu, Z. et al. "DPMPC-Planner: A real-time UAV trajectory planning framework for complex static environments with dynamic obstacles," 2021.</p>
+<p><strong>Summary:</strong> A two-phase framework: (1) generate a static trajectory using iterative corridor shrinking through the known environment, (2) apply reactive chance-constrained Model Predictive Control (MPC) to avoid dynamic obstacles. The MPC predicts obstacle positions using a uniform acceleration model and plans risk-bounded avoidance trajectories. Separating static and dynamic planning reduces computational load.</p>
+<p><strong>Complexity:</strong> Static planning: ~50ms. MPC replanning: ~10ms per cycle. Total: real-time at 20+ Hz.</p>
+<p><strong>Real-drone results:</strong> Simulation with realistic dynamic obstacles. The two-phase architecture is practical.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Implement this two-phase architecture.</strong> Plan against the static map first, then layer dynamic avoidance on top. This separation of concerns is clean and efficient. Use the chance-constrained MPC formulation to handle prediction uncertainty.</p>
+<hr />
+<h3 id="72-dwa-3d-reactive-dynamic-window-for-drones">7.2 DWA-3D -- Reactive Dynamic Window for Drones<a class="headerlink" href="#72-dwa-3d-reactive-dynamic-window-for-drones" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2409.05421, "DWA-3D: A Reactive Planner for Robust and Efficient Autonomous UAV Navigation," 2024.</p>
+<p><strong>Summary:</strong> Extends the Dynamic Window Approach (DWA) from ground robots to 3D UAV navigation. Samples candidate velocity commands within the drone's dynamic limits, simulates short trajectories for each, and selects the velocity that best balances goal progress, obstacle clearance, and smoothness. Purely reactive -- no map or prediction required.</p>
+<p><strong>Complexity:</strong> O(v) per cycle where v is number of velocity samples (~100-500). Runs at 50+ Hz.</p>
+<p><strong>Real-drone results:</strong> Demonstrated on real quadrotors for basic obstacle avoidance.</p>
+<p><strong>Implementation recommendation:</strong> Use as the <strong>lowest-level reactive controller</strong> when other planners fail or are too slow. DWA-3D is the "panic mode" avoidance -- simple, fast, and always available. Sits below APF in the control hierarchy.</p>
+<hr />
+<h3 id="73-spot-spatio-temporal-obstacle-free-trajectory-planning">7.3 SPOT -- Spatio-Temporal Obstacle-Free Trajectory Planning<a class="headerlink" href="#73-spot-spatio-temporal-obstacle-free-trajectory-planning" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2602.01189, "SPOT: Spatio-Temporal Obstacle-free Trajectory Planning for UAVs in Unknown Dynamic Environments," 2026.</p>
+<p><strong>Summary:</strong> A 4D (x, y, z, t) planner that constructs spatio-temporal safe flight corridors by predicting obstacle trajectories and carving time-varying free-space volumes. Trajectory optimization then finds smooth paths within these 4D corridors. Handles unknown environments with dynamic obstacles using vision-based detection and tracking.</p>
+<p><strong>Complexity:</strong> Corridor generation: ~20ms. Trajectory optimization: ~15ms. Total: real-time at 30 Hz.</p>
+<p><strong>Real-drone results:</strong> Tested with onboard sensing in environments with moving obstacles.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Leading-edge approach for dynamic environments.</strong> The spatio-temporal corridor concept is the most principled way to handle moving obstacles. Implement as the primary dynamic avoidance module, with DWA-3D/APF as reactive fallbacks.</p>
+<hr />
+<h3 id="74-velocity-and-acceleration-obstacles">7.4 Velocity and Acceleration Obstacles<a class="headerlink" href="#74-velocity-and-acceleration-obstacles" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2506.06255, "From NLVO to NAO: Reactive Robot Navigation using Velocity and Acceleration Obstacles," 2025.</p>
+<p><strong>Summary:</strong> Extends Velocity Obstacles to Nonlinear Velocity Obstacles (NLVO) for curved obstacle trajectories, and further to Acceleration Obstacles (NAO) that account for the drone's acceleration limits. This provides tighter, more realistic avoidance constraints than linear VO methods. Requires fewer velocity adjustments when obstacles follow curved paths.</p>
+<p><strong>Complexity:</strong> O(k) per obstacle for VO computation. Real-time for 10-20 obstacles.</p>
+<p><strong>Real-drone results:</strong> Simulation with curved-trajectory obstacles.</p>
+<p><strong>Implementation recommendation:</strong> Integrate with ORCA (Section 5.3) for inter-drone avoidance. The acceleration-obstacle formulation is more realistic for quadrotors, which have bounded thrust.</p>
+<hr />
+<h3 id="75-intent-prediction-for-dynamic-avoidance">7.5 Intent Prediction for Dynamic Avoidance<a class="headerlink" href="#75-intent-prediction-for-dynamic-avoidance" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2409.15633, "Intent Prediction-Driven Model Predictive Control for UAV Planning and Navigation in Dynamic Environments," 2024.</p>
+<p><strong>Summary:</strong> Uses learned intent prediction models to forecast where dynamic obstacles (people, vehicles, other drones) will go, rather than assuming constant velocity. The predicted intent distributions feed into a stochastic MPC that plans risk-bounded trajectories. Significantly outperforms constant-velocity prediction for structured obstacle motion (e.g., pedestrians following sidewalks).</p>
+<p><strong>Complexity:</strong> Intent prediction: ~15ms (neural network inference). MPC: ~10ms. Requires training data for the prediction model.</p>
+<p><strong>Real-drone results:</strong> Simulation with pedestrian and vehicle models.</p>
+<p><strong>Implementation recommendation:</strong> Future enhancement for urban drone operations. For initial SDK release, constant-velocity prediction (as in DPMPC-Planner) is sufficient. Add intent prediction as a v2.0 feature when operating in pedestrian-dense environments.</p>
+<hr />
+<h2 id="8-geofencing-and-airspace-compliance">8. Geofencing and Airspace Compliance<a class="headerlink" href="#8-geofencing-and-airspace-compliance" title="Permanent link">&para;</a></h2>
+<h3 id="81-dynamic-geofencing-for-uavs">8.1 Dynamic Geofencing for UAVs<a class="headerlink" href="#81-dynamic-geofencing-for-uavs" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2110.09453, "A New Approach to Complex Dynamic Geofencing for Unmanned Aerial Vehicles," 2021.</p>
+<p><strong>Summary:</strong> Defines two types of geofences: keep-in (the drone must stay inside) and keep-out (the drone must not enter). Dynamic geofences can change shape and position over time (e.g., temporary flight restrictions, moving emergency zones). The system compares the UAV's current position against geofence boundaries and triggers enforcement actions: warnings at the enhanced warning zone, control takeover at the geofence boundary, and immediate landing if violated.</p>
+<p><strong>Complexity:</strong> Point-in-polygon testing: O(e) per geofence where e is number of edges. For convex geofences, O(log e). Real-time for hundreds of geofences.</p>
+<p><strong>Real-drone results:</strong> Implemented in DJI and ArduPilot firmware. GPS-based enforcement is standard on commercial drones.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Must-implement for regulatory compliance.</strong> The SDK needs: (1) a geofence database (preloaded + dynamic updates), (2) continuous position checking at the control loop rate, (3) graduated response (warn -&gt; slow -&gt; stop -&gt; land). Support both polygon and cylindrical geofence shapes. Integrate with AirMap or similar geofence data providers.</p>
+<hr />
+<h3 id="82-nasa-utm-unmanned-traffic-management">8.2 NASA UTM -- Unmanned Traffic Management<a class="headerlink" href="#82-nasa-utm-unmanned-traffic-management" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> IEEE 9081718, "Flight Demonstration of Unmanned Aircraft System (UAS) Traffic Management (UTM) at Technical Capability Level 3." Also: IEEE 8730856, "Drone Flight Planning for Safe Urban Operations: UTM Requirements and Tools."</p>
+<p><strong>Summary:</strong> NASA's UTM system defines four Technical Capability Levels (TCL). TCL-3 (demonstrated in 2019) includes: strategic deconfliction (pre-flight path approval), conformance monitoring (real-time tracking), contingency management (what-if scenarios), and dynamic airspace management. The UTM ecosystem uses UAS Service Suppliers (USS) as intermediaries between drone operators and air traffic control. Drones submit flight plans, receive approval/denial, and report position during flight.</p>
+<p><strong>Complexity:</strong> System architecture complexity (REST APIs, real-time telemetry). Algorithmic complexity is low (geofence checking, flight plan validation).</p>
+<p><strong>Real-drone results:</strong> NASA flight demonstrations with multiple operators and USS providers in urban environments. FAA has adopted UTM concepts into operational LAANC system.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Integrate USS API connectivity into the SDK.</strong> The SDK should: (1) submit flight plans to a USS before takeoff, (2) report real-time telemetry during flight, (3) receive and respond to dynamic airspace constraints, (4) handle flight plan modifications. Use the InterUSS Platform (open-source) for testing. This is required for legal commercial operations in the US.</p>
+<hr />
+<h3 id="83-geofence-sizing-for-safety">8.3 Geofence Sizing for Safety<a class="headerlink" href="#83-geofence-sizing-for-safety" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> IEEE 9925807, "Airspace Geofencing Volume Sizing with an Advanced Air Mobility Vehicle Performance Model."</p>
+<p><strong>Summary:</strong> Determines how large a geofence volume needs to be around a drone's planned trajectory to statistically guarantee the drone stays inside despite wind, GPS error, control delays, and emergency maneuvers. Uses vehicle performance models (max speed, max climb rate, response time) to compute safety buffers. The buffer size depends on the vehicle's kinetic energy and worst-case stopping distance.</p>
+<p><strong>Complexity:</strong> Closed-form calculation based on vehicle parameters. O(1) per trajectory segment.</p>
+<p><strong>Real-drone results:</strong> Validated with Advanced Air Mobility vehicle models.</p>
+<p><strong>Implementation recommendation:</strong> <strong>Implement geofence buffer calculation based on vehicle dynamics.</strong> Each drone type in the SDK should have a performance model (max speed, max acceleration, GPS accuracy) that determines the minimum safe buffer distance from geofence boundaries. Build this into the path planner as a hard constraint.</p>
+<hr />
+<h3 id="84-utm-security-challenges">8.4 UTM Security Challenges<a class="headerlink" href="#84-utm-security-challenges" title="Permanent link">&para;</a></h3>
+<p><strong>Citation:</strong> arXiv:2408.11125, "Towards the Unmanned Aerial Vehicle Traffic Management Systems (UTMs): Security Risks and Challenges," 2024. Also: arXiv:2601.08229, "A Survey of Security Challenges and Solutions for UAS Traffic Management (UTM) and small Unmanned Aerial Systems (sUAS)," 2026.</p>
+<p><strong>Summary:</strong> Identifies critical security vulnerabilities in UTM systems: GPS spoofing, communication jamming, unauthorized airspace access, and man-in-the-middle attacks on USS communications. Proposes countermeasures including multi-sensor navigation (GPS + visual + IMU), encrypted communication channels, blockchain-based flight logging, and anomaly detection for spoofing.</p>
+<p><strong>Complexity:</strong> Security implementation varies. Encrypted communications add minimal overhead. Multi-sensor fusion requires additional hardware.</p>
+<p><strong>Real-drone results:</strong> Security analyses based on real UTM deployments. GPS spoofing attacks demonstrated in controlled settings.</p>
+<p><strong>Implementation recommendation:</strong> Design the UTM integration layer with security from the start: TLS for all USS communications, GPS spoofing detection (compare GPS with IMU dead-reckoning), and signed flight logs. These are not optional for commercial deployment.</p>
+<hr />
+<h2 id="9-implementation-roadmap">9. Implementation Roadmap<a class="headerlink" href="#9-implementation-roadmap" title="Permanent link">&para;</a></h2>
+<p>Based on this literature review, here is the recommended implementation priority for the SDK's path planning module:</p>
+<h3 id="phase-1-core-foundation-must-have">Phase 1: Core Foundation (Must-Have)<a class="headerlink" href="#phase-1-core-foundation-must-have" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Paper/Method</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trajectory representation</td>
+<td>Mellinger-Kumar minimum snap polynomials</td>
+<td>Industry standard, QP-solvable, differential flatness</td>
+</tr>
+<tr>
+<td>Global planner (known maps)</td>
+<td>A* with energy-weighted edges</td>
+<td>Fast, optimal, well-understood</td>
+</tr>
+<tr>
+<td>Global planner (unknown)</td>
+<td>Informed RRT*</td>
+<td>Asymptotically optimal, fast convergence</td>
+</tr>
+<tr>
+<td>Reactive safety layer</td>
+<td>APF with velocity-adaptive improvements</td>
+<td>O(n) per step, last line of defense</td>
+</tr>
+<tr>
+<td>Geofencing</td>
+<td>Keep-in/keep-out with safety buffers</td>
+<td>Regulatory requirement</td>
+</tr>
+<tr>
+<td>Battery management</td>
+<td>Return-to-base with emergency landing zones</td>
+<td>Safety requirement</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-2-multi-drone-high-priority">Phase 2: Multi-Drone (High Priority)<a class="headerlink" href="#phase-2-multi-drone-high-priority" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Paper/Method</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Centralized deconfliction</td>
+<td>CBS (bounded-suboptimal ECBS)</td>
+<td>Optimal, proven for MAPF</td>
+</tr>
+<tr>
+<td>Decentralized avoidance</td>
+<td>ORCA / V-RVO</td>
+<td>Fast, runs on each drone independently</td>
+</tr>
+<tr>
+<td>Swarm trajectory planner</td>
+<td>EGO-Swarm architecture</td>
+<td>Best demonstrated decentralized swarm result</td>
+</tr>
+<tr>
+<td>Formation control</td>
+<td>SwarmPath impedance control</td>
+<td>Validated on real Crazyflies, 6% sim-to-real gap</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-3-advanced-features-enhancement">Phase 3: Advanced Features (Enhancement)<a class="headerlink" href="#phase-3-advanced-features-enhancement" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Paper/Method</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Local planning pipeline</td>
+<td>Fast-Planner (kinodynamic A* + B-spline)</td>
+<td>Proven real-time performance</td>
+</tr>
+<tr>
+<td>Dynamic obstacle avoidance</td>
+<td>DPMPC-Planner (two-phase) + SPOT corridors</td>
+<td>Principled predict-then-plan architecture</td>
+</tr>
+<tr>
+<td>Energy optimization</td>
+<td>Wind-aware planning + optimal cruise speed</td>
+<td>15-30% energy savings</td>
+</tr>
+<tr>
+<td>UTM integration</td>
+<td>NASA UTM / InterUSS APIs</td>
+<td>Required for commercial operations</td>
+</tr>
+<tr>
+<td>Smooth trajectory post-processing</td>
+<td>Dubins airplane + LP smoothing</td>
+<td>Improves flyability of any planner output</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-4-researchexperimental">Phase 4: Research/Experimental<a class="headerlink" href="#phase-4-researchexperimental" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Paper/Method</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Learned planning</td>
+<td>Neural Informed RRT*</td>
+<td>Requires onboard GPU, training data</td>
+</tr>
+<tr>
+<td>MARL swarm control</td>
+<td>MARLander-style policies</td>
+<td>Sim-to-real gap still challenging</td>
+</tr>
+<tr>
+<td>Intent prediction</td>
+<td>Intent-driven MPC</td>
+<td>Requires training data for obstacle types</td>
+</tr>
+<tr>
+<td>Time-optimal trajectories</td>
+<td>Alternating peak optimization</td>
+<td>For aggressive/racing applications</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hardware-testbed-recommendation">Hardware Testbed Recommendation<a class="headerlink" href="#hardware-testbed-recommendation" title="Permanent link">&para;</a></h3>
+<p>Use <strong>Crazyswarm2</strong> (Crazyflie 2.1 drones + VICON/OptiTrack) for initial development and validation. The Crazyflie platform costs ~$200/unit, supports polynomial trajectory upload, and has the largest open-source swarm codebase. Design all trajectory interfaces to be compatible with Crazyswarm2's format, then abstract for other platforms (PX4, ArduPilot).</p>
+<hr />
+<h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
+<h3 id="dubins-paths-smooth-trajectories">Dubins Paths / Smooth Trajectories<a class="headerlink" href="#dubins-paths-smooth-trajectories" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://ieeexplore.ieee.org/document/6842268/">Path planning using 3D Dubins Curve for UAVs</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/7053093/">A literature review of UAV 3D path planning</a></li>
+<li><a href="https://arxiv.org/abs/2509.24143">A Novel Model for 3D Motion Planning for a Generalized Dubins Vehicle</a></li>
+<li><a href="https://arxiv.org/abs/2603.21713">Simple Trajectory Smoothing for UAV Reference Path Planning</a></li>
+<li><a href="https://link.springer.com/rwe/10.1007/978-90-481-9707-1_120">Implementing Dubins Airplane Paths on Fixed-Wing UAVs</a></li>
+<li><a href="https://pypi.org/project/dubins/">dubins Python library</a></li>
+</ul>
+<h3 id="a-and-rrt">A* and RRT<a class="headerlink" href="#a-and-rrt" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/html/2410.19414v1">Motion Planning for Robotics: A Review for Sampling-based Planners</a></li>
+<li><a href="https://arxiv.org/html/2508.16515v1">Comparative Analysis of UAV Path Planning Algorithms in Urban 3D</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/8665162/">UAV Path Planning System Based on 3D Informed RRT*</a></li>
+<li><a href="https://arxiv.org/abs/2309.14595">Neural Informed RRT*</a></li>
+<li><a href="https://arxiv.org/html/2504.11823">Multi-goal RRT with Safety and Dynamic Constraints</a></li>
+<li><a href="https://ar5iv.labs.arxiv.org/html/2203.03092">Systematic Comparison of Path Planning Algorithms using PathBench</a></li>
+</ul>
+<h3 id="trajectory-optimization">Trajectory Optimization<a class="headerlink" href="#trajectory-optimization" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://ieeexplore.ieee.org/document/5980409/">Minimum snap trajectory generation and control for quadrotors -- Mellinger &amp; Kumar</a></li>
+<li><a href="https://arxiv.org/pdf/1907.01531">Robust and Efficient Quadrotor Trajectory Generation (Fast-Planner)</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/9309347/">EGO-Planner: An ESDF-free Gradient-based Local Planner</a></li>
+<li><a href="https://arxiv.org/abs/2011.04183">EGO-Swarm: Decentralized Quadrotor Swarm System</a></li>
+<li><a href="https://arxiv.org/html/2402.18021v1">Online Time-Optimal Trajectory Generation for Two Quadrotors</a></li>
+<li><a href="https://arxiv.org/abs/2303.00851">Aggressive Trajectory Generation for Racing Drone Swarms</a></li>
+<li><a href="https://whoenig.github.io/publications/2017_ICRA_Preiss_Hoenig.pdf">Crazyswarm: A large nano-quadcopter swarm</a></li>
+<li><a href="https://imrclab.github.io/crazyswarm2/">Crazyswarm2 Documentation</a></li>
+</ul>
+<h3 id="potential-field-planning">Potential Field Planning<a class="headerlink" href="#potential-field-planning" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/html/2306.16276">Path Planning with Potential Field-Based Obstacle Avoidance in 3D</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/11199033/">Improved Artificial Potential Field Method for UAV Path Planning</a></li>
+<li><a href="https://arxiv.org/html/2512.07609">Velocity-Adaptive Artificial Potential Field</a></li>
+<li><a href="https://arxiv.org/html/2410.07848v1">SwarmPath: Drone Swarm Navigation with APF and Impedance Control</a></li>
+<li><a href="https://arxiv.org/html/2501.09338v1">Robust UAV Path Planning with APF-SA</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/9189345/">Path Planning for Dense Drone Formation with Modified APF</a></li>
+</ul>
+<h3 id="decentralized-planning">Decentralized Planning<a class="headerlink" href="#decentralized-planning" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://www.sciencedirect.com/science/article/pii/S0004370214001386">Conflict-Based Search for Optimal Multi-Agent Pathfinding -- Sharon et al.</a></li>
+<li><a href="https://arxiv.org/abs/2207.00576">CBS for Multi-Robot Motion Planning with Kinodynamic Constraints</a></li>
+<li><a href="https://arxiv.org/pdf/2102.13281">V-RVO: Decentralized Multi-Agent Collision Avoidance using Voronoi</a></li>
+<li><a href="https://arxiv.org/html/2406.04159v1">MARLander: Drone Swarm Planning with MARL</a></li>
+<li><a href="https://arxiv.org/html/2312.06250v1">Robust and Decentralized RL for UAV Path Planning</a></li>
+<li><a href="https://ar5iv.labs.arxiv.org/html/2109.08403">Robust Trajectory Planning for Multi-Drone Coordination in Large Scenes</a></li>
+<li><a href="https://arxiv.org/html/2603.24908">Integrated Multi-Drone Task Allocation and Trajectory Generation</a></li>
+</ul>
+<h3 id="energy-aware-planning">Energy-Aware Planning<a class="headerlink" href="#energy-aware-planning" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/html/2410.17585v1">Energy-Optimal Planning of Waypoint-Based UAV Missions</a></li>
+<li><a href="https://arxiv.org/html/2402.10529v1">Energy-aware Multi-UAV Coverage with Optimal Speed</a></li>
+<li><a href="https://ar5iv.labs.arxiv.org/html/2004.00182">Energy-Efficiency Path Planning Under Wind Conditions</a></li>
+<li><a href="https://arxiv.org/html/2511.12618v1">EcoFlight: Low-Energy Paths Through Obstacles</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/10397242">How to Save a Drone in Case of Low Battery</a></li>
+<li><a href="https://arxiv.org/html/2505.20423v1">Vision-Based Risk Aware Emergency Landing</a></li>
+<li><a href="https://arxiv.org/pdf/1703.10049">Autonomous Recharging and Flight Mission Planning</a></li>
+<li><a href="https://arxiv.org/pdf/2206.10775">Overview of Drone Energy Consumption Factors</a></li>
+<li><a href="https://arxiv.org/html/2502.19401v1">ARENA: Adaptive Risk-aware Energy-efficient Navigation</a></li>
+</ul>
+<h3 id="dynamic-obstacle-avoidance">Dynamic Obstacle Avoidance<a class="headerlink" href="#dynamic-obstacle-avoidance" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2109.07024">DPMPC-Planner: Real-time UAV Trajectory with Dynamic Obstacles</a></li>
+<li><a href="https://arxiv.org/html/2409.05421v1">DWA-3D: Reactive Planner for UAV Navigation</a></li>
+<li><a href="https://arxiv.org/html/2602.01189v1">SPOT: Spatio-Temporal Obstacle-free Trajectory Planning</a></li>
+<li><a href="https://arxiv.org/html/2506.06255">From NLVO to NAO: Velocity and Acceleration Obstacles</a></li>
+<li><a href="https://arxiv.org/html/2409.15633">Intent Prediction-Driven MPC for UAV Navigation</a></li>
+<li><a href="https://arxiv.org/html/2506.20311v1">Real-Time Obstacle Avoidance Algorithms Survey</a></li>
+</ul>
+<h3 id="geofencing-and-airspace-compliance">Geofencing and Airspace Compliance<a class="headerlink" href="#geofencing-and-airspace-compliance" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/pdf/2110.09453">Complex Dynamic Geofencing for UAVs</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/9081718/">UTM Flight Demonstration at Technical Capability Level 3</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/8730856/">Drone Flight Planning for Safe Urban Operations: UTM Requirements</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/9925807/">Airspace Geofencing Volume Sizing</a></li>
+<li><a href="https://arxiv.org/html/2408.11125v1">UTM Security Risks and Challenges</a></li>
+<li><a href="https://arxiv.org/html/2601.08229">Survey of Security Challenges for UTM and sUAS</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

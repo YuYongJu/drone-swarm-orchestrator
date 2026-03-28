@@ -1,0 +1,2969 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python SDK for multi-drone swarm orchestration over MAVLink">
+      
+      
+      
+        <link rel="canonical" href="https://yuyongju.github.io/drone-swarm-orchestrator/literature-review-swarm-communication/">
+      
+      
+        <link rel="prev" href="../LITERATURE_REVIEW_PATH_PLANNING/">
+      
+      
+        <link rel="next" href="../blog/state-of-drone-swarm-software-2026/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Swarm Communication Review - drone-swarm</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#literature-review-drone-swarm-communication-mesh-networking-and-resilient-coordination" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="drone-swarm" class="md-header__button md-logo" aria-label="drone-swarm" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            drone-swarm
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Swarm Communication Review
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yuyongju/drone-swarm-orchestrator" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    drone-swarm-orchestrator
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="drone-swarm" class="md-nav__button md-logo" aria-label="drone-swarm" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    drone-swarm
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yuyongju/drone-swarm-orchestrator" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    drone-swarm-orchestrator
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/first-swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your First Swarm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/formations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formation Flying
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/custom-missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Missions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/swarm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swarm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/drone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Drone
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Missions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--needs-review"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LITERATURE_REVIEW_PATH_PLANNING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Path Planning Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swarm Communication Review
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swarm Communication Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-mavlink-optimization-for-multi-vehicle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. MAVLink Optimization for Multi-Vehicle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. MAVLink Optimization for Multi-Vehicle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-mavlink-v2-protocol-fundamentals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 MAVLink v2 Protocol Fundamentals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-mavlink-security-signing-and-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 MAVLink Security -- Signing and Encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-bandwidth-management-at-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Bandwidth Management at Scale
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-mesh-networking-for-drone-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Mesh Networking for Drone Swarms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Mesh Networking for Drone Swarms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-ad-hoc-networking-protocols-aodv-olsr-batman" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Ad-Hoc Networking Protocols (AODV, OLSR, BATMAN)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-lora-mesh-for-long-range-drone-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 LoRa Mesh for Long-Range Drone Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-wifi-mesh-80211s-for-short-range-high-bandwidth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 WiFi Mesh (802.11s) for Short-Range High-Bandwidth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-delay-tolerant-networking-dtn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Delay-Tolerant Networking (DTN)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-geographic-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Geographic Routing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Geographic Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-gpsr-and-variants-for-fanets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 GPSR and Variants for FANETs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-anti-jamming-electronic-warfare-resilience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Anti-Jamming / Electronic Warfare Resilience
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Anti-Jamming / Electronic Warfare Resilience">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-frequency-hopping-spread-spectrum-fhss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Frequency Hopping Spread Spectrum (FHSS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-fiber-optic-tethered-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Fiber-Optic Tethered Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-autonomous-navigation-without-gps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Autonomous Navigation Without GPS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-cognitive-radio-for-dynamic-spectrum-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Cognitive Radio for Dynamic Spectrum Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-consensus-under-communication-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Consensus Under Communication Constraints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Consensus Under Communication Constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-swarmraft-crash-fault-tolerant-consensus-for-drones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 SwarmRaft -- Crash-Fault-Tolerant Consensus for Drones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-byzantine-fault-tolerance-for-uav-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Byzantine Fault Tolerance for UAV Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-time-synchronization-across-swarm-members" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Time Synchronization Across Swarm Members
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-starlinklte5g-for-drone-bvlos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Starlink/LTE/5G for Drone BVLOS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Starlink/LTE/5G for Drone BVLOS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-lte4g-for-drone-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 LTE/4G for Drone Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-5g-for-drone-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 5G for Drone Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-starlink-for-drone-bvlos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Starlink for Drone BVLOS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-multi-drone-relative-positioning-without-gps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Multi-Drone Relative Positioning Without GPS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Multi-Drone Relative Positioning Without GPS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-uwb-ranging-between-drones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 UWB Ranging Between Drones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-visual-relative-localization-apriltags-leds-uvdar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Visual Relative Localization (AprilTags, LEDs, UVDAR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-cooperative-slam-for-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Cooperative SLAM for Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-2024-2026-state-of-the-art" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 2024-2026 State of the Art
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 2024-2026 State of the Art">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-semantic-communication-for-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Semantic Communication for Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-llmagentic-ai-for-swarm-coordination" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 LLM/Agentic AI for Swarm Coordination
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-comprehensive-surveys-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Comprehensive Surveys (2025)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-key-2024-2026-trends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Key 2024-2026 Trends
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-sdk-upgrade-recommendation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. SDK Upgrade Recommendation Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. SDK Upgrade Recommendation Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#priority-1-core-communication-implement-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 1 -- Core Communication (Implement First)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-2-resilient-positioning-implement-second" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 2 -- Resilient Positioning (Implement Second)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-3-advanced-capabilities-v2-of-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 3 -- Advanced Capabilities (v2 of SDK)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-4-researchfuture-track-but-dont-implement-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 4 -- Research/Future (Track but Don't Implement Yet)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Sources
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#protocol-and-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protocol and Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mesh-networking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mesh Networking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geographic-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geographic Routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anti-jamming-and-ew" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-Jamming and EW
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consensus-and-synchronization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consensus and Synchronization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cellular-and-satellite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cellular and Satellite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relative-positioning-and-slam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relative Positioning and SLAM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-of-the-art-surveys-2025-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State of the Art Surveys (2025-2026)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/state-of-drone-swarm-software-2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State of Drone Swarm Software 2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-mavlink-optimization-for-multi-vehicle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. MAVLink Optimization for Multi-Vehicle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. MAVLink Optimization for Multi-Vehicle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-mavlink-v2-protocol-fundamentals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 MAVLink v2 Protocol Fundamentals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-mavlink-security-signing-and-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 MAVLink Security -- Signing and Encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-bandwidth-management-at-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Bandwidth Management at Scale
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-mesh-networking-for-drone-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Mesh Networking for Drone Swarms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Mesh Networking for Drone Swarms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-ad-hoc-networking-protocols-aodv-olsr-batman" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Ad-Hoc Networking Protocols (AODV, OLSR, BATMAN)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-lora-mesh-for-long-range-drone-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 LoRa Mesh for Long-Range Drone Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-wifi-mesh-80211s-for-short-range-high-bandwidth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 WiFi Mesh (802.11s) for Short-Range High-Bandwidth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-delay-tolerant-networking-dtn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Delay-Tolerant Networking (DTN)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-geographic-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Geographic Routing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Geographic Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-gpsr-and-variants-for-fanets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 GPSR and Variants for FANETs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-anti-jamming-electronic-warfare-resilience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Anti-Jamming / Electronic Warfare Resilience
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Anti-Jamming / Electronic Warfare Resilience">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-frequency-hopping-spread-spectrum-fhss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Frequency Hopping Spread Spectrum (FHSS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-fiber-optic-tethered-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Fiber-Optic Tethered Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-autonomous-navigation-without-gps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Autonomous Navigation Without GPS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-cognitive-radio-for-dynamic-spectrum-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Cognitive Radio for Dynamic Spectrum Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-consensus-under-communication-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Consensus Under Communication Constraints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Consensus Under Communication Constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-swarmraft-crash-fault-tolerant-consensus-for-drones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 SwarmRaft -- Crash-Fault-Tolerant Consensus for Drones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-byzantine-fault-tolerance-for-uav-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Byzantine Fault Tolerance for UAV Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-time-synchronization-across-swarm-members" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Time Synchronization Across Swarm Members
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-starlinklte5g-for-drone-bvlos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Starlink/LTE/5G for Drone BVLOS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Starlink/LTE/5G for Drone BVLOS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-lte4g-for-drone-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 LTE/4G for Drone Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-5g-for-drone-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 5G for Drone Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-starlink-for-drone-bvlos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Starlink for Drone BVLOS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-multi-drone-relative-positioning-without-gps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Multi-Drone Relative Positioning Without GPS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Multi-Drone Relative Positioning Without GPS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-uwb-ranging-between-drones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 UWB Ranging Between Drones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-visual-relative-localization-apriltags-leds-uvdar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Visual Relative Localization (AprilTags, LEDs, UVDAR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-cooperative-slam-for-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Cooperative SLAM for Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-2024-2026-state-of-the-art" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 2024-2026 State of the Art
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 2024-2026 State of the Art">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-semantic-communication-for-swarms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Semantic Communication for Swarms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-llmagentic-ai-for-swarm-coordination" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 LLM/Agentic AI for Swarm Coordination
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-comprehensive-surveys-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Comprehensive Surveys (2025)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-key-2024-2026-trends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Key 2024-2026 Trends
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-sdk-upgrade-recommendation-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. SDK Upgrade Recommendation Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. SDK Upgrade Recommendation Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#priority-1-core-communication-implement-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 1 -- Core Communication (Implement First)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-2-resilient-positioning-implement-second" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 2 -- Resilient Positioning (Implement Second)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-3-advanced-capabilities-v2-of-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 3 -- Advanced Capabilities (v2 of SDK)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-4-researchfuture-track-but-dont-implement-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority 4 -- Research/Future (Track but Don't Implement Yet)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Sources
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#protocol-and-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protocol and Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mesh-networking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mesh Networking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geographic-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geographic Routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anti-jamming-and-ew" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anti-Jamming and EW
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consensus-and-synchronization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consensus and Synchronization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cellular-and-satellite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cellular and Satellite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relative-positioning-and-slam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relative Positioning and SLAM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-of-the-art-surveys-2025-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State of the Art Surveys (2025-2026)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="literature-review-drone-swarm-communication-mesh-networking-and-resilient-coordination">Literature Review: Drone Swarm Communication, Mesh Networking, and Resilient Coordination<a class="headerlink" href="#literature-review-drone-swarm-communication-mesh-networking-and-resilient-coordination" title="Permanent link">&para;</a></h1>
+<p><strong>Date</strong>: 2026-03-26
+<strong>Purpose</strong>: Inform SDK upgrade decisions for the Drone Swarm Orchestrator
+<strong>Scope</strong>: 2019-2026 academic and defense research across 8 topic areas</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#1-mavlink-optimization-for-multi-vehicle">MAVLink Optimization for Multi-Vehicle</a></li>
+<li><a href="#2-mesh-networking-for-drone-swarms">Mesh Networking for Drone Swarms</a></li>
+<li><a href="#3-geographic-routing">Geographic Routing</a></li>
+<li><a href="#4-anti-jamming--electronic-warfare-resilience">Anti-Jamming / Electronic Warfare Resilience</a></li>
+<li><a href="#5-consensus-under-communication-constraints">Consensus Under Communication Constraints</a></li>
+<li><a href="#6-starlinklte5g-for-drone-bvlos">Starlink/LTE/5G for Drone BVLOS</a></li>
+<li><a href="#7-multi-drone-relative-positioning-without-gps">Multi-Drone Relative Positioning Without GPS</a></li>
+<li><a href="#8-2024-2026-state-of-the-art">2024-2026 State of the Art</a></li>
+<li><a href="#9-sdk-upgrade-recommendation-summary">SDK Upgrade Recommendation Summary</a></li>
+</ol>
+<hr />
+<h2 id="1-mavlink-optimization-for-multi-vehicle">1. MAVLink Optimization for Multi-Vehicle<a class="headerlink" href="#1-mavlink-optimization-for-multi-vehicle" title="Permanent link">&para;</a></h2>
+<h3 id="11-mavlink-v2-protocol-fundamentals">1.1 MAVLink v2 Protocol Fundamentals<a class="headerlink" href="#11-mavlink-v2-protocol-fundamentals" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Koubaa, A. et al., "Micro Air Vehicle Link (MAVLink) in a Nutshell: A Survey," <em>IEEE Access</em>, 2019.
+<strong>Link</strong>: https://arxiv.org/pdf/1906.10641</p>
+<p><strong>Summary</strong>: Comprehensive survey of the MAVLink protocol. MAVLink v2 has 14 bytes of overhead per packet (v1 had 8 bytes). The protocol supports up to 255 vehicles on a single network via system ID addressing. Messages are sent with built-in priority ordering across application and transport layers. The protocol uses multicast for telemetry streams and point-to-point with retransmission for guaranteed-delivery operations (mission protocol, parameter protocol).</p>
+<p><strong>Practical Feasibility</strong>: HIGH. MAVLink is the de facto standard for PX4/ArduPilot. The 255-vehicle limit is a hard protocol constraint that must be considered in swarm architecture.</p>
+<h3 id="12-mavlink-security-signing-and-encryption">1.2 MAVLink Security -- Signing and Encryption<a class="headerlink" href="#12-mavlink-security-signing-and-encryption" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Kwon, Y. et al., "MAVSec: Securing the MAVLink Protocol for Ardupilot/PX4 Unmanned Aerial Systems," <em>arXiv:1905.00265</em>, 2019.
+<strong>Link</strong>: https://arxiv.org/abs/1905.00265</p>
+<p><strong>Summary</strong>: MAVLink v2 introduced optional 48-bit packet signing (SHA-256 based) for authentication, but provides NO encryption -- all messages are transmitted in plaintext. This enables man-in-the-middle, replay, and spoofing attacks. MAVSec proposes adding AES-CBC, AES-CTR, and RC4 encryption layers to the MAVLink stack.</p>
+<p><strong>Citation</strong>: Al-Tameemi, G. et al., "A Novel Cipher for Enhancing MAVLink Security: Design, Security Analysis, and Performance Evaluation Using a Drone Testbed," <em>arXiv:2504.20626</em>, April 2025.
+<strong>Link</strong>: https://arxiv.org/html/2504.20626v1</p>
+<p><strong>Summary</strong>: Proposes ChaCha20-based encryption for MAVLink. Testing on real drone hardware shows only marginal overhead: 0.024% memory increase, 5.653% battery consumption increase, and 2.937% CPU load increase relative to unencrypted MAVLink. ChaCha20 outperforms AES in constrained environments.</p>
+<p><strong>Citation</strong>: Daoud, L. et al., "A Survey of Security Challenges and Solutions for UAV Communication," <em>arXiv:2601.08229</em>, January 2026.
+<strong>Link</strong>: https://arxiv.org/pdf/2601.08229</p>
+<p><strong>Summary</strong>: Comprehensive 2026 survey identifying key security gaps: no confidentiality in MAVLink, limited adoption of message signing, vulnerability to cross-layer attacks during swarm operations. Identifies post-quantum cryptography for UAV swarms as an open research challenge.</p>
+<p><strong>Practical Feasibility</strong>: HIGH. ChaCha20 encryption is lightweight enough for onboard implementation. Message signing should be mandatory in any swarm deployment.</p>
+<p><strong>SDK Recommendation</strong>: Implement ChaCha20 encryption as a configurable layer on top of MAVLink v2. Make message signing mandatory by default. Add key rotation mechanism for in-flight rekeying.</p>
+<h3 id="13-bandwidth-management-at-scale">1.3 Bandwidth Management at Scale<a class="headerlink" href="#13-bandwidth-management-at-scale" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Adapted from MAVLink protocol documentation and PX4 developer forums.
+<strong>Link</strong>: https://mavlink.io/en/about/overview.html</p>
+<p><strong>Summary</strong>: MAVLink's 14-byte overhead and lack of built-in compression mean bandwidth scales linearly with drone count. For N drones on a shared 915 MHz radio at 250 kbps, the practical limit is approximately 10-15 drones sending full telemetry at 10 Hz. There are no published papers specifically on MAVLink message compression or prioritization at scale -- this is a significant gap in the literature.</p>
+<p><strong>Citation</strong>: Pascarella, D. et al., "Towards a Unified Decentralized Swarm Management and Maintenance Coordination Based on MAVLink," <em>ResearchGate</em>, 2016.
+<strong>Link</strong>: https://www.researchgate.net/publication/307937283</p>
+<p><strong>Summary</strong>: Proposes a compact <code>VehicleStatus</code> message that aggregates essential telemetry for swarm coordination, reducing per-vehicle bandwidth requirements. This is a pragmatic approach to bandwidth management rather than compression.</p>
+<p><strong>SDK Recommendation</strong>: Implement a message priority queue (safety-critical &gt; navigation &gt; telemetry &gt; debug). Add configurable message rate decimation per drone count. Design a compact swarm-status message that aggregates essential fields (position, velocity, battery, state) into a single MAVLink message. Consider delta-encoding for slowly-changing fields.</p>
+<hr />
+<h2 id="2-mesh-networking-for-drone-swarms">2. Mesh Networking for Drone Swarms<a class="headerlink" href="#2-mesh-networking-for-drone-swarms" title="Permanent link">&para;</a></h2>
+<h3 id="21-ad-hoc-networking-protocols-aodv-olsr-batman">2.1 Ad-Hoc Networking Protocols (AODV, OLSR, BATMAN)<a class="headerlink" href="#21-ad-hoc-networking-protocols-aodv-olsr-batman" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Lakew, D. et al., "Simulation-Based Comparison of AODV, OLSR and HWMP Protocols for Flying Ad Hoc Networks," <em>Springer LNCS</em>, 2014.
+<strong>Link</strong>: https://link.springer.com/chapter/10.1007/978-3-319-10353-2_21</p>
+<p><strong>Summary</strong>: Comparative study of reactive (AODV), proactive (OLSR), and hybrid (HWMP) routing in FANETs. OLSR outperforms AODV in dense networks due to precomputed routes, but AODV has lower overhead in sparse topologies. HWMP (used in 802.11s) provides a middle ground.</p>
+<p><strong>Citation</strong>: TU Munich, "B.A.T.M.A.N Unpacked: A Guide to the Protocol's Fundamental Concepts," <em>NET-2024-09</em>, 2024.
+<strong>Link</strong>: https://www.net.in.tum.de/fileadmin/TUM/NET/NET-2024-09-1/NET-2024-09-1_02.pdf</p>
+<p><strong>Summary</strong>: BATMAN Advanced operates at Layer 2 (data link layer), making it transparent to higher protocols. Unlike OLSR and AODV (Layer 3), BATMAN-adv doesn't require IP address configuration on the mesh, simplifying deployment. Testing shows approximately 130-meter single-hop range with Raspberry Pi nodes.</p>
+<p><strong>Citation</strong>: Sliwa, B. et al., "Performance analysis of mesh routing protocols for UAV swarming applications," <em>ResearchGate</em>.
+<strong>Link</strong>: https://www.researchgate.net/publication/220825932</p>
+<p><strong>Summary</strong>: Recommends BATMAN-Advanced and open80211s for reliable multihop mesh establishment in swarming applications. Babel protocol outperforms both OLSR and BATMAN in some mobility scenarios.</p>
+<p><strong>Practical Feasibility</strong>: HIGH. All three protocols have mature Linux implementations. BATMAN-adv is available in the Linux kernel. OLSR has the <code>olsrd</code> daemon. Babel has <code>babeld</code>.</p>
+<p><strong>SDK Recommendation</strong>: Default to BATMAN-adv for Layer 2 mesh (simplest deployment, kernel-native). Support OLSR as alternative for networks requiring Layer 3 routing. Implement automatic mesh formation on boot with configurable protocol selection.</p>
+<h3 id="22-lora-mesh-for-long-range-drone-communication">2.2 LoRa Mesh for Long-Range Drone Communication<a class="headerlink" href="#22-lora-mesh-for-long-range-drone-communication" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Davoli, L. et al., "Hybrid LoRa-IEEE 802.11s Opportunistic Mesh Networking for Flexible UAV Swarming," <em>Drones (MDPI)</em>, 5(2):26, 2021.
+<strong>Link</strong>: https://www.mdpi.com/2504-446X/5/2/26</p>
+<p><strong>Summary</strong>: The seminal paper on hybrid LoRa + WiFi mesh for drone swarms. LoRa provides long-range (multi-km) low-bandwidth command/control, while 802.11s provides short-range high-bandwidth data exchange. Uses TDMA scheduling for LoRa with fields for node ID, positioning, and mesh configuration. Architecture uses a "root node" in the 802.11s mesh connected to the ground station.</p>
+<p><strong>Citation</strong>: Gupta, A. et al., "Swarm of Drones Using LoRa Flying Ad-Hoc Network," <em>IEEE</em>, 2021.
+<strong>Link</strong>: https://ieeexplore.ieee.org/document/9491655/</p>
+<p><strong>Summary</strong>: Implements a FANET using LoRa with customized DSDV routing protocol optimized for single-channel operation. GPS coordinates shared via LoRa enable geographic awareness. Demonstrates that LoRa's line-of-sight advantage at altitude significantly extends range compared to ground-level applications.</p>
+<p><strong>Citation</strong>: PMC, "LoRa Technology in Flying Ad Hoc Networks: A Survey of Challenges and Open Issues," 2023.
+<strong>Link</strong>: https://pmc.ncbi.nlm.nih.gov/articles/PMC10007589/</p>
+<p><strong>Summary</strong>: Comprehensive survey identifying LoRa's characteristics for FANETs: LPWAN class, low cost, low power, large coverage area, high device count support. Key challenges: low data rate (0.3-50 kbps), half-duplex operation, duty cycle limitations in some regions.</p>
+<p><strong>Practical Feasibility</strong>: MEDIUM-HIGH. LoRa modules (SX1276/SX1262) are inexpensive ($5-15) and well-supported. Data rate is only suitable for command/control, not video or bulk data. The hybrid approach (LoRa + WiFi) is the most practical architecture.</p>
+<p><strong>SDK Recommendation</strong>: Implement dual-radio architecture: LoRa for long-range heartbeat/command/emergency, WiFi mesh for high-bandwidth data. Abstract the radio layer so the SDK can route messages to the appropriate radio based on message type and priority.</p>
+<h3 id="23-wifi-mesh-80211s-for-short-range-high-bandwidth">2.3 WiFi Mesh (802.11s) for Short-Range High-Bandwidth<a class="headerlink" href="#23-wifi-mesh-80211s-for-short-range-high-bandwidth" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Souza, E. &amp; Nikolaidis, I., "A Novel Routing Metric for IEEE 802.11s-based Swarm-of-Drones Applications," <em>ACM MobiQuitous</em>, 2019.
+<strong>Link</strong>: https://dl.acm.org/doi/10.1145/3360774.3368197</p>
+<p><strong>Summary</strong>: Develops customized routing metrics for 802.11s in drone swarms. Standard 802.11s metrics (Airtime Link Metric) don't account for 3D mobility. Proposes metrics incorporating link quality, node velocity, and expected link lifetime for more stable routing in mobile swarms.</p>
+<p><strong>Citation</strong>: Souza, E. et al., "Extending IEEE 802.11s Mesh Routing for 3-D Mobile Drone Applications in ns-3," <em>ACM ns-3 Workshop</em>, 2020.
+<strong>Link</strong>: https://dl.acm.org/doi/10.1145/3389400.3389406</p>
+<p><strong>Summary</strong>: Extends the HWMP (Hybrid Wireless Mesh Protocol) in 802.11s with 3D awareness for drone networks. Standard HWMP was designed for stationary nodes; this extension accounts for altitude and 3D movement vectors.</p>
+<p><strong>Practical Feasibility</strong>: HIGH. 802.11s is supported natively in Linux via <code>iw</code> and <code>wpa_supplicant</code>. Most modern WiFi chipsets support mesh mode. 5 GHz band recommended for inter-drone links (less interference), 2.4 GHz for ground coverage.</p>
+<p><strong>SDK Recommendation</strong>: Use 802.11s as the primary high-bandwidth mesh layer. Implement custom routing metrics that factor in 3D position, velocity vectors, and link quality. Configure 5 GHz for drone-to-drone, 2.4 GHz for drone-to-ground.</p>
+<h3 id="24-delay-tolerant-networking-dtn">2.4 Delay-Tolerant Networking (DTN)<a class="headerlink" href="#24-delay-tolerant-networking-dtn" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Various DTN research for FANETs (multiple authors).
+<strong>Links</strong>: https://ieeexplore.ieee.org/document/8566956/ | https://arxiv.org/pdf/2308.06732</p>
+<p><strong>Summary</strong>: DTN uses store-carry-and-forward (SCF) technique for intermittent connectivity. UD-MAC protocol provides delay-tolerant CSMA-based medium access for UAVs. Key insight: DTN is critical for search-and-rescue and large-area surveillance where maintaining continuous mesh connectivity is impractical.</p>
+<p><strong>Practical Feasibility</strong>: MEDIUM. DTN adds complexity but is essential for missions where drones operate beyond mesh range. IBR-DTN is an open-source DTN implementation for Linux.</p>
+<p><strong>SDK Recommendation</strong>: Implement a message store-and-forward buffer for when mesh connectivity is lost. Priority queue ensures safety-critical messages are forwarded first when connectivity is restored. This is a "nice-to-have" for v2 of the SDK.</p>
+<hr />
+<h2 id="3-geographic-routing">3. Geographic Routing<a class="headerlink" href="#3-geographic-routing" title="Permanent link">&para;</a></h2>
+<h3 id="31-gpsr-and-variants-for-fanets">3.1 GPSR and Variants for FANETs<a class="headerlink" href="#31-gpsr-and-variants-for-fanets" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Kumar, S. et al., "UF-GPSR: Modified Geographical Routing Protocol for Flying Ad-hoc Networks," <em>Trans. Emerging Telecomm. Tech.</em>, 2023.
+<strong>Link</strong>: https://onlinelibrary.wiley.com/doi/abs/10.1002/ett.4813</p>
+<p><strong>Summary</strong>: UF-GPSR optimizes the greedy forwarding strategy by incorporating residual energy ratio, distance degree, movement direction, link risk degree, and speed as routing parameters. Significantly outperforms vanilla GPSR in high-mobility FANET scenarios by reducing packet loss during topology changes.</p>
+<p><strong>Citation</strong>: Alsaade, F. et al., "A new version of the greedy perimeter stateless routing scheme in flying ad hoc networks," <em>Journal of King Saud University</em>, 2024.
+<strong>Link</strong>: https://www.sciencedirect.com/science/article/pii/S1319157824001551</p>
+<p><strong>Summary</strong>: Combines GPSR with AODV (GPSR+AODV). Each UAV adjusts hello broadcast period based on predicted future spatial coordinates, and modifies greedy forwarding by restricting the search space using fitness functions based on relative velocity, energy level, buffer capacity, and distance.</p>
+<p><strong>Citation</strong>: MDPI Electronics, "Geographic Routing Decision Method for Flying Ad Hoc Networks Based on Mobile Prediction," 2025.
+<strong>Link</strong>: https://www.mdpi.com/2079-9292/14/7/1456</p>
+<p><strong>Summary</strong>: MP-QGRD combines Extended Kalman Filter (EKF) for node position prediction with reinforcement learning for routing decisions. Hello packet intervals are dynamically adjusted based on network conditions, addressing the Temporary Communication Blindness (TCB) problem in standard GPSR.</p>
+<p><strong>Citation</strong>: An, J. et al., "Empowering Adaptive Geolocation-Based Routing for UAV Networks with Reinforcement Learning," <em>Drones (MDPI)</em>, 2023.
+<strong>Link</strong>: https://www.mdpi.com/2504-446X/7/6/387</p>
+<p><strong>Summary</strong>: Uses RL to learn optimal geographic routing decisions, considering link stability, energy consumption, and communication distance. Demonstrates that ML-enhanced geographic routing outperforms static protocols in dynamic FANET environments.</p>
+<p><strong>Practical Feasibility</strong>: MEDIUM. Geographic routing is powerful for large swarms where maintaining full topology knowledge is expensive. However, it requires accurate position information from all nodes -- chicken-and-egg problem if GPS is denied.</p>
+<p><strong>SDK Recommendation</strong>: Implement position-aware routing as a module. Each drone broadcasts position + velocity in mesh beacons. The routing layer can use this for greedy geographic forwarding when the network is large enough (&gt;20 drones) that proactive routing becomes expensive. Fall back to BATMAN-adv/OLSR for smaller swarms.</p>
+<hr />
+<h2 id="4-anti-jamming-electronic-warfare-resilience">4. Anti-Jamming / Electronic Warfare Resilience<a class="headerlink" href="#4-anti-jamming-electronic-warfare-resilience" title="Permanent link">&para;</a></h2>
+<h3 id="41-frequency-hopping-spread-spectrum-fhss">4.1 Frequency Hopping Spread Spectrum (FHSS)<a class="headerlink" href="#41-frequency-hopping-spread-spectrum-fhss" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: YTTEK Technology, "Frequency Switching in Military Drones," 2025.
+<strong>Link</strong>: https://yttek.com/frequency-switching-in-military-drones-how-advanced-drone-communication-modules-counter-jamming/</p>
+<p><strong>Summary</strong>: Military-grade drone communication modules utilize FHSS across 300 MHz to 6 GHz with hopping rates exceeding 2,000 hops/second. This prevents a jammer from concentrating energy on any single frequency long enough to deny communication.</p>
+<p><strong>Citation</strong>: Chrysovalantis et al., "Enhancing Communication Security in Drones Using QRNG in Frequency Hopping Spread Spectrum," <em>Future Internet (MDPI)</em>, 16(11):412, 2024.
+<strong>Link</strong>: https://www.mdpi.com/1999-5903/16/11/412</p>
+<p><strong>Summary</strong>: Integrates Quantum Random Number Generators (QRNG) into FHSS for truly unpredictable hopping sequences. Multi-drone framework demonstrates significant improvement in jamming resistance compared to pseudo-random hopping sequences.</p>
+<p><strong>Citation</strong>: arXiv:2508.11687, "Agent-Based Anti-Jamming Techniques for UAV Communications in Adversarial Environments: A Comprehensive Survey," August 2025.
+<strong>Link</strong>: https://arxiv.org/html/2508.11687v1</p>
+<p><strong>Summary</strong>: Deep reinforcement learning enables autonomous anti-jamming: drones learn optimal frequency hopping speed and transmission power in real-time. Genetic algorithms can additionally optimize hopping patterns for covertness. This is the most comprehensive recent survey on the topic.</p>
+<p><strong>Practical Feasibility</strong>: LOW-MEDIUM for civilian SDK. True FHSS requires SDR hardware (not standard WiFi/LoRa modules). However, WiFi channel hopping and LoRa frequency diversity provide some resilience with COTS hardware.</p>
+<p><strong>SDK Recommendation</strong>: For the near-term, implement WiFi channel rotation and LoRa frequency diversity as basic anti-jamming measures. Add a "contested environment" mode that reduces transmission power and uses directional antenna profiles if available. For future versions, support SDR backends (HackRF, LimeSDR) for true FHSS capability.</p>
+<h3 id="42-fiber-optic-tethered-communication">4.2 Fiber-Optic Tethered Communication<a class="headerlink" href="#42-fiber-optic-tethered-communication" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: IEEE Spectrum, "How Autonomous Drone Warfare Is Emerging in Ukraine," 2025; Militarnyi.com, PowerHornet.com coverage.
+<strong>Links</strong>: https://spectrum.ieee.org/autonomous-drone-warfare | https://powerhornet.com/how-ukrainian-startups-forged-a-new-era-of-gps-free-drone-navigation/</p>
+<p><strong>Summary</strong>: Russia and Ukraine both deploy fiber-optic tethered FPV drones that are completely unjammable. Ukraine's "Shovkopryad" (Silkworm) is a universal fiber-optic module for air, ground, and sea drones. Fiber spools allow multi-kilometer control links immune to all RF jamming. Deployed at scale since mid-2024.</p>
+<p><strong>Practical Feasibility</strong>: LOW for swarms (each drone needs its own fiber), but HIGH for single critical relay drones. A fiber-tethered relay drone could serve as an unjammable bridge between a ground station and a WiFi mesh swarm.</p>
+<p><strong>SDK Recommendation</strong>: Not directly applicable to swarm mesh networking, but document the architecture for a fiber-tethered relay node that bridges ground station to swarm mesh. This is a valuable field deployment pattern.</p>
+<h3 id="43-autonomous-navigation-without-gps">4.3 Autonomous Navigation Without GPS<a class="headerlink" href="#43-autonomous-navigation-without-gps" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: OKSI.ai, "OMNInav: A Breakthrough in GPS-Denied Navigation for UAS," 2025.
+<strong>Link</strong>: https://oksi.ai/omninav-gps-denied-navigation/</p>
+<p><strong>Citation</strong>: ModalAI, "VIO Development Drones," 2024-2025.
+<strong>Link</strong>: https://www.modalai.com/pages/vio-drone</p>
+<p><strong>Summary</strong>: Visual-Inertial Odometry (VIO) fuses camera and IMU data for GPS-free navigation. ModalAI's VOXL 2 runs VIO onboard at &gt;30 Hz. Ukrainian companies (NORDA Dynamics and others) have developed AI-powered terrain-matching systems that compare live video against pre-loaded 3D maps for GPS-denied strike missions.</p>
+<p><strong>Citation</strong>: Palantir, "Visual Navigation for Drones," 2025.
+<strong>Link</strong>: https://blog.palantir.com/the-future-of-drone-navigation-7236075fdedf</p>
+<p><strong>Summary</strong>: Palantir/DJI-backed approaches use map-matching (visual comparison against satellite imagery) for GPS-denied navigation. Pittsburgh-based Swan and Auterion are partnering with Ukrainian attack-drone makers under the DOD's Artemis project to build GPS-denied navigation by end of FY2025.</p>
+<p><strong>Practical Feasibility</strong>: HIGH for VIO (PX4 supports it natively via VOXL 2 or similar). MEDIUM for terrain matching (requires pre-loaded maps and significant compute).</p>
+<p><strong>SDK Recommendation</strong>: Integrate VIO as a primary position source alongside GPS. Support PX4's existing VIO interfaces (MAVLink VISION_POSITION_ESTIMATE). Add a GPS-denied mode that switches to VIO-only with appropriate safety margins and swarm behavior adjustments.</p>
+<h3 id="44-cognitive-radio-for-dynamic-spectrum-access">4.4 Cognitive Radio for Dynamic Spectrum Access<a class="headerlink" href="#44-cognitive-radio-for-dynamic-spectrum-access" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Bhardwaj, A. et al., "Cognitive Radio and Dynamic TDMA for efficient UAVs swarm communications," <em>Computer Networks</em>, 2021.
+<strong>Link</strong>: https://www.sciencedirect.com/science/article/abs/pii/S1389128621002929</p>
+<p><strong>Summary</strong>: Ground Control Station acts as central coordinator for spectrum allocation. CR and SDR are used to select, allocate, and share available frequencies using Dynamic TDMA. The GCS handles bandwidth allocation for all UAVs in its coverage zone.</p>
+<p><strong>Citation</strong>: DTIC, "Cognitive Radio Clustering Algorithm for Swarms," US Department of Defense, 2023.
+<strong>Link</strong>: https://apps.dtic.mil/sti/trecms/pdf/AD1200510.pdf</p>
+<p><strong>Summary</strong>: Military research on CR clustering for swarms. Machine learning-based adaptive channel selection reduces latency and enhances link resilience. Proposes decentralized spectrum sensing where each drone contributes to a shared spectrum map.</p>
+<p><strong>Practical Feasibility</strong>: LOW for near-term. Requires SDR hardware and significant computational resources. Regulatory issues in civilian spectrum.</p>
+<p><strong>SDK Recommendation</strong>: Long-term research item. For now, implement multi-channel awareness -- the SDK should be able to detect congested channels and switch autonomously within legal ISM bands.</p>
+<hr />
+<h2 id="5-consensus-under-communication-constraints">5. Consensus Under Communication Constraints<a class="headerlink" href="#5-consensus-under-communication-constraints" title="Permanent link">&para;</a></h2>
+<h3 id="51-swarmraft-crash-fault-tolerant-consensus-for-drones">5.1 SwarmRaft -- Crash-Fault-Tolerant Consensus for Drones<a class="headerlink" href="#51-swarmraft-crash-fault-tolerant-consensus-for-drones" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: SwarmRaft, "Leveraging Consensus for Robust Drone Swarm Coordination in GNSS-Degraded Environments," <em>arXiv:2508.00622</em>, August 2025. Also published in <em>IEEE Internet of Things Journal</em>.
+<strong>Link</strong>: https://arxiv.org/html/2508.00622v2</p>
+<p><strong>Summary</strong>: Adapts the Raft consensus algorithm for lightweight, crash-tolerant decision-making in resource-constrained aerial swarms. Uses peer-to-peer distance measurements + consensus + Byzantine-resilient evaluation to detect and correct malicious or faulty position reports. Unlike heavy BFT protocols, SwarmRaft is designed for the CPU/memory constraints of flight controllers.</p>
+<p><strong>Practical Feasibility</strong>: HIGH. Raft is well-understood and has many open-source implementations. The adaptation for drones addresses real deployment constraints.</p>
+<p><strong>SDK Recommendation</strong>: Implement SwarmRaft or a similar lightweight consensus protocol for swarm state agreement (leader election, mission waypoint confirmation, emergency votes). This is a critical building block.</p>
+<h3 id="52-byzantine-fault-tolerance-for-uav-swarms">5.2 Byzantine Fault Tolerance for UAV Swarms<a class="headerlink" href="#52-byzantine-fault-tolerance-for-uav-swarms" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: DTPBFT, "A Dynamic and Highly Trusted PBFT Algorithm for UAV Swarm," <em>Journal of Computer Networks</em>, 2024.
+<strong>Link</strong>: https://www.sciencedirect.com/science/article/pii/S1389128624004341</p>
+<p><strong>Summary</strong>: DTPBFT achieves 0.24 second consensus time with 200 UAVs, demonstrating scalability without communication congestion. Uses dynamic trust scoring to exclude potentially compromised nodes from consensus.</p>
+<p><strong>Citation</strong>: Springer, "Reputation-Enhanced Practical Byzantine Fault Tolerance Algorithm for Node Capture Attacks on UAV Networks," 2025.
+<strong>Link</strong>: https://link.springer.com/article/10.1007/s43926-025-00164-y</p>
+<p><strong>Summary</strong>: RePA adds reputation scoring to PBFT to mitigate node capture attacks (physical compromise of a drone leading to injection of malicious messages). Trust values are computed from historical behavior and used to weight votes.</p>
+<p><strong>Practical Feasibility</strong>: MEDIUM. Full BFT is computationally expensive for small flight controllers, but feasible on companion computers (Raspberry Pi, Jetson Nano). DTPBFT's 0.24s consensus at 200 nodes is promising.</p>
+<p><strong>SDK Recommendation</strong>: Implement a tiered approach: lightweight crash-fault-tolerance (SwarmRaft) on flight controllers, full BFT (DTPBFT-style) on companion computers for critical decisions. Support configurable fault tolerance level.</p>
+<h3 id="53-time-synchronization-across-swarm-members">5.3 Time Synchronization Across Swarm Members<a class="headerlink" href="#53-time-synchronization-across-swarm-members" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: ScienceDirect, "High-precision Time Synchronization Algorithm for UAV Ad Hoc Networks based on Bidirectional Pseudo-range Measurements," 2024.
+<strong>Link</strong>: https://www.sciencedirect.com/science/article/pii/S1570870523002469</p>
+<p><strong>Summary</strong>: Fully distributed time sync algorithm for multi-hop dynamic ad hoc networks. Uses bidirectional pseudo-range measurements (similar to how GPS works but between drones) to compute clock offsets without requiring a central time server.</p>
+<p><strong>Citation</strong>: Bettstetter, C. et al., "One Time for All: Synchronizing Time in Drone Swarms," University of Klagenfurt.
+<strong>Link</strong>: https://bettstetter.com/one-time-for-all/</p>
+<p><strong>Summary</strong>: Bio-inspired synchronization based on firefly pulse coupling. Drones achieve synchronization without centralized control by adjusting their clocks based on received timing pulses from neighbors. Converges even with packet loss and variable network delays.</p>
+<p><strong>Citation</strong>: Swarm-Sync framework, "A Distributed Global Time Synchronization Framework for Swarm Robotic Systems," <em>ScienceDirect</em>.
+<strong>Link</strong>: https://www.sciencedirect.com/science/article/abs/pii/S1574119217303735</p>
+<p><strong>Summary</strong>: Swarm-Sync provides a distributed global time synchronization framework achieving microsecond-level precision. Uses cluster heads for hierarchical synchronization with intermediate drones bridging clusters.</p>
+<p><strong>Practical Feasibility</strong>: HIGH. Time synchronization is essential for coordinated maneuvers, sensor fusion, and TDMA-based communication. PTP (Precision Time Protocol, IEEE 1588) provides a starting point, with drone-specific enhancements for wireless networks.</p>
+<p><strong>SDK Recommendation</strong>: Implement distributed time sync using a hybrid approach: PTP-based sync when a ground station is reachable, firefly-inspired peer sync when disconnected. Target microsecond-level accuracy for sensor fusion, millisecond-level for coordinated maneuvers.</p>
+<hr />
+<h2 id="6-starlinklte5g-for-drone-bvlos">6. Starlink/LTE/5G for Drone BVLOS<a class="headerlink" href="#6-starlinklte5g-for-drone-bvlos" title="Permanent link">&para;</a></h2>
+<h3 id="61-lte4g-for-drone-operations">6.1 LTE/4G for Drone Operations<a class="headerlink" href="#61-lte4g-for-drone-operations" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: PMC, "Experimental Study on LTE Mobile Network Performance Parameters for Controlled Drone Flights," 2024.
+<strong>Link</strong>: https://pmc.ncbi.nlm.nih.gov/articles/PMC11511506/</p>
+<p><strong>Citation</strong>: MDPI Drones, "Real-Time Long-Range Control of an Autonomous UAV Using 4G LTE Network," 2025.
+<strong>Link</strong>: https://www.mdpi.com/2504-446X/9/12/812</p>
+<p><strong>Summary</strong>: Flight tests demonstrate stable remote control over LTE with average control delay under 150 ms. Video streaming at 640x480. LTE bandwidth ranges from 3-55 Mbps depending on tower proximity and congestion. Farthest test: 4,200 km from UAV to operator. LTE is viable for command-and-control BVLOS but uplink data rate limits high-quality video streaming.</p>
+<p><strong>Practical Feasibility</strong>: HIGH. LTE modems are small, cheap, and widely available. Coverage gaps remain the main limitation for rural/remote BVLOS.</p>
+<h3 id="62-5g-for-drone-operations">6.2 5G for Drone Operations<a class="headerlink" href="#62-5g-for-drone-operations" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: PMC, "5G-enabled UAVs for Energy-efficient Opportunistic Networking," 2024.
+<strong>Link</strong>: https://pmc.ncbi.nlm.nih.gov/articles/PMC11237935/</p>
+<p><strong>Summary</strong>: 5G provides ultra-low latency (&lt;10ms) and high bandwidth for real-time drone control, HD video streaming, and multi-drone coordination. However, 5G coverage is urban-centric, and mmWave 5G has very limited range at altitude due to lack of ground reflections.</p>
+<p><strong>Practical Feasibility</strong>: MEDIUM. 5G offers excellent performance where available, but coverage is limited. Sub-6GHz 5G is more practical for drones than mmWave.</p>
+<h3 id="63-starlink-for-drone-bvlos">6.3 Starlink for Drone BVLOS<a class="headerlink" href="#63-starlink-for-drone-bvlos" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: FAA BAA004, "Conducting Extended BVLOS Operations in Challenging Terrain," uAvionix/FAA, 2024.
+<strong>Link</strong>: https://www.faa.gov/uas/programs_partnerships/BAA/BAA004-uAvionix-Conducting-Extended-BVLOS-Operations-in-challenging-terrain.pdf</p>
+<p><strong>Summary</strong>: FAA-sponsored demonstration integrating LTE, C-Band radio, and Starlink into a unified C2 link system. Successfully tested Starlink LEO for SATCOM on a Watts Prism quadcopter in Montana. The Link Executive Manager (LEM) dynamically selects the best available link.</p>
+<p><strong>Citation</strong>: DroneDJ, "Event38 Adding SpaceX Starlink to Drones for BVLOS Flights," August 2024.
+<strong>Link</strong>: https://dronedj.com/2024/08/12/event38-adding-spacex-starlink-to-drones-for-bvlos-flights/</p>
+<p><strong>Summary</strong>: Event38 is integrating Starlink terminals into fixed-wing drones for BVLOS survey operations. Key challenge: Starlink Mini terminal weight (~1.1 kg) and power draw (~40W) limit integration to larger platforms.</p>
+<p><strong>Citation</strong>: Ground Control, "Drone Satcoms: Power, Payload &amp; Performance," 2025.
+<strong>Link</strong>: https://www.groundcontrol.com/blog/satellite-connectivity-drones-faqs/</p>
+<p><strong>Summary</strong>: Starlink LEO latency: typically 500-1,500 ms round-trip for IP-based services. This is adequate for supervisory control but marginal for real-time swarm coordination. Beam switching (July 2025) allows terminals to maintain connections across multiple satellites, improving reliability during movement.</p>
+<p><strong>Citation</strong>: Militarnyi.com, "Blyskavka UAV Can Be Controlled via Starlink," 2025.
+<strong>Link</strong>: https://militarnyi.com/en/news/blyskavka-uav-can-be-controlled-starlink/</p>
+<p><strong>Summary</strong>: Ukrainian military drones (Blyskavka) now support Starlink, fiber optics, and LTE as interchangeable control links, demonstrating the hybrid multi-link approach in combat.</p>
+<p><strong>Practical Feasibility</strong>: MEDIUM. Starlink terminals are still heavy/power-hungry for small drones. Excellent for large fixed-wing platforms or as a ground station backhaul. Latency is too high for tight swarm formation flying but fine for supervisory control.</p>
+<p><strong>SDK Recommendation</strong>: Implement a multi-link manager that can use LTE, WiFi, LoRa, and Starlink simultaneously, selecting the best available link per message type. Design the swarm to be autonomous during high-latency periods (Starlink) and accept supervisory commands when they arrive. This "autonomy with supervision" architecture is critical for BVLOS.</p>
+<hr />
+<h2 id="7-multi-drone-relative-positioning-without-gps">7. Multi-Drone Relative Positioning Without GPS<a class="headerlink" href="#7-multi-drone-relative-positioning-without-gps" title="Permanent link">&para;</a></h2>
+<h3 id="71-uwb-ranging-between-drones">7.1 UWB Ranging Between Drones<a class="headerlink" href="#71-uwb-ranging-between-drones" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Li, S. et al., "Onboard Ranging-based Relative Localization and Stability for Lightweight Aerial Swarms," <em>arXiv:2003.05853v3</em> (extended version, updated 2024).
+<strong>Link</strong>: https://arxiv.org/html/2003.05853v3</p>
+<p><strong>Summary</strong>: First fully autonomous onboard relative localization system on a team of 13 Crazyflie drones. Uses many-to-many UWB protocol for efficient distance computation. EKF-based relative estimator achieves &lt;0.2m position error at 16 Hz update rate. Code is open-source.</p>
+<p><strong>Citation</strong>: Bitcraze, "Ultra-Wideband Swarm Ranging," 2021-2024.
+<strong>Link</strong>: https://www.bitcraze.io/2021/06/ultra-wideband-swarm-ranging/</p>
+<p><strong>Summary</strong>: Open-source UWB swarm ranging protocol for Crazyflie platforms. The protocol is simple, efficient, adaptive, robust, and scalable. 25-second flight test with 3 drones showed mean absolute error of ~0.03 meters.</p>
+<p><strong>Citation</strong>: Scientific Data (Nature), "Dataset for UWB Cooperative Navigation and Positioning of UAV Cluster," 2025.
+<strong>Link</strong>: https://www.nature.com/articles/s41597-025-04808-0</p>
+<p><strong>Summary</strong>: Public dataset for UWB cooperative positioning research, collected under different flight formations in indoor and outdoor environments. Valuable for benchmarking relative localization algorithms.</p>
+<p><strong>Practical Feasibility</strong>: HIGH. UWB modules (DW1000/DW3000) are available for ~$10-20 per drone. The Crazyflie implementation provides a proven open-source starting point. Scalability to larger drones requires adapting the protocol for longer ranges and different UWB hardware.</p>
+<p><strong>SDK Recommendation</strong>: Integrate UWB-based relative localization as a core module. Support Decawave DW3000 chipset. Use the Bitcraze protocol as a starting point, extending it with the EKF-based approach from the 13-drone paper. This enables GPS-denied swarm operation.</p>
+<h3 id="72-visual-relative-localization-apriltags-leds-uvdar">7.2 Visual Relative Localization (AprilTags, LEDs, UVDAR)<a class="headerlink" href="#72-visual-relative-localization-apriltags-leds-uvdar" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: arXiv:2412.02393, "Bio-inspired Visual Relative Localization for Large Swarms of UAVs," December 2024.
+<strong>Link</strong>: https://arxiv.org/html/2412.02393v1</p>
+<p><strong>Summary</strong>: UVDAR (Ultraviolet Direction and Ranging) system uses UV LED markers and UV-sensitive cameras for inter-drone detection. Provides bearing and range to neighbors without infrastructure. Bio-inspired approach scales to large swarms because each drone only needs to detect nearby neighbors.</p>
+<p><strong>Citation</strong>: Various AprilTag-based localization papers, 2024-2025.
+<strong>Links</strong>: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4815151</p>
+<p><strong>Summary</strong>: AprilTags provide 6-DOF pose estimation from a single camera image when tag dimensions are known. Limited to short range (typically &lt;10m for reliable detection) and requires line of sight. Useful for precision landing, docking, and close-formation operations.</p>
+<p><strong>Practical Feasibility</strong>: MEDIUM. UVDAR requires specialized UV LEDs and cameras. AprilTags work with standard cameras but limited range. Both are complementary to UWB (visual for bearing, UWB for range).</p>
+<p><strong>SDK Recommendation</strong>: Support AprilTag-based relative pose estimation for close-proximity operations (landing, docking, formation). Investigate UVDAR for medium-range visual tracking. Fuse visual bearing estimates with UWB range measurements for robust relative localization.</p>
+<h3 id="73-cooperative-slam-for-swarms">7.3 Cooperative SLAM for Swarms<a class="headerlink" href="#73-cooperative-slam-for-swarms" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: ETH Zurich, "Fully Onboard SLAM for Distributed Mapping with a Swarm of Nano-Drones," <em>arXiv:2309.03678</em>, 2023-2024.
+<strong>Link</strong>: https://arxiv.org/abs/2309.03678 | https://github.com/ETH-PBL/Nano_Swarm_Mapping</p>
+<p><strong>Summary</strong>: Distributed mapping on nano-UAVs (35g payload limit). Achieves 12 cm mapping accuracy over 180 m^2. Total system RAM: ~50 kB. Mapping time inversely proportional to swarm size. Uses GAP9 SoC for onboard processing. Fully open-source.</p>
+<p><strong>Citation</strong>: MISTLab, "Swarm-SLAM: Sparse Decentralized Collaborative SLAM for Multi-Robot Systems," <em>arXiv:2301.06230</em>, 2023-2024.
+<strong>Link</strong>: https://github.com/MISTLab/Swarm-SLAM</p>
+<p><strong>Summary</strong>: ROS 2-compatible decentralized collaborative SLAM framework. Supports LiDAR and stereo visual SLAM. Each robot maintains a local map and exchanges sparse descriptors with neighbors for loop closure. Designed for bandwidth-constrained inter-robot communication.</p>
+<p><strong>Citation</strong>: HKUST, "D2SLAM: Decentralized and Distributed Collaborative Visual-Inertial SLAM System for Aerial Swarm," 2024.
+<strong>Link</strong>: https://github.com/HKUST-Aerial-Robotics/D2SLAM</p>
+<p><strong>Summary</strong>: Visual-inertial SLAM specifically for aerial swarms. Decentralized architecture -- no central server required. Each drone runs VIO locally and exchanges compressed map features with neighbors for global consistency.</p>
+<p><strong>Citation</strong>: Springer, "Distributed UAV Swarm Collaborative SLAM Based on Visual-Inertial-Ranging Measurement," 2025.
+<strong>Link</strong>: https://link.springer.com/chapter/10.1007/978-981-96-2220-7_18</p>
+<p><strong>Summary</strong>: Combines VIO with UWB ranging for collaborative SLAM. UWB accelerates initialization and provides scale reference for visual systems. Optimized inter-UAV communication for real-time operation.</p>
+<p><strong>Practical Feasibility</strong>: MEDIUM-HIGH. Swarm-SLAM and D2SLAM are open-source and ROS 2 compatible. Computational requirements are significant for full SLAM, but the nano-drone paper shows it's possible even on extremely constrained hardware with the right algorithms.</p>
+<p><strong>SDK Recommendation</strong>: Integrate Swarm-SLAM or D2SLAM as an optional cooperative mapping module. For constrained platforms, offer the ETH nano-drone approach. The key insight is that drones should exchange compressed map features, not raw sensor data, to conserve bandwidth.</p>
+<hr />
+<h2 id="8-2024-2026-state-of-the-art">8. 2024-2026 State of the Art<a class="headerlink" href="#8-2024-2026-state-of-the-art" title="Permanent link">&para;</a></h2>
+<h3 id="81-semantic-communication-for-swarms">8.1 Semantic Communication for Swarms<a class="headerlink" href="#81-semantic-communication-for-swarms" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: arXiv:2508.12043, "Talk Less, Fly Lighter: Autonomous Semantic Compression for UAV Swarm Communication via LLMs," August 2025.
+<strong>Link</strong>: https://arxiv.org/abs/2508.12043</p>
+<p><strong>Summary</strong>: Evaluates LLM-driven semantic compression for swarm communication. Instead of transmitting raw data, drones encode task-relevant semantics, achieving significant bandwidth reduction while preserving mission-critical information. Tested with 9 mainstream LLMs.</p>
+<p><strong>Citation</strong>: arXiv:2503.00053, "AI and Semantic Communication for Infrastructure Monitoring in 6G-Driven Drone Swarms," February 2025.
+<strong>Link</strong>: https://arxiv.org/abs/2503.00053</p>
+<p><strong>Summary</strong>: Proposes 6G-enabled swarm system integrating URLLC, edge AI, and semantic communication. Each drone captures multimodal sensor data, encodes it via AI-based semantic encoder, transmits wirelessly, and decodes using shared knowledge base. Represents the convergence of AI and communication for next-generation swarms.</p>
+<h3 id="82-llmagentic-ai-for-swarm-coordination">8.2 LLM/Agentic AI for Swarm Coordination<a class="headerlink" href="#82-llmagentic-ai-for-swarm-coordination" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: arXiv:2501.02341, "UAVs Meet LLMs: Overviews and Perspectives Toward Agentic Low-Altitude Mobility," January 2025.
+<strong>Link</strong>: https://arxiv.org/html/2501.02341v1</p>
+<p><strong>Citation</strong>: arXiv:2506.08045, "UAVs Meet Agentic AI: A Multidomain Survey," June 2025.
+<strong>Link</strong>: https://arxiv.org/html/2506.08045v1</p>
+<p><strong>Summary</strong>: Emerging paradigm where LLMs serve as high-level mission planners for drone swarms, translating natural language mission descriptions into task allocations and coordination strategies. The agentic UAV architecture consists of four layers: perception, cognition, control, and communication.</p>
+<h3 id="83-comprehensive-surveys-2025">8.3 Comprehensive Surveys (2025)<a class="headerlink" href="#83-comprehensive-surveys-2025" title="Permanent link">&para;</a></h3>
+<p><strong>Citation</strong>: Springer, "UAV Swarms: Research, Challenges, and Future Directions," January 2025.
+<strong>Link</strong>: https://link.springer.com/article/10.1186/s44147-025-00582-3</p>
+<p><strong>Summary</strong>: Comprehensive survey covering coordinated path planning, task assignment, formation control, and security. AI and ML integration for decision-making and adaptability is the dominant trend.</p>
+<p><strong>Citation</strong>: MDPI Drones, "A Survey on UxV Swarms and the Role of Artificial Intelligence," October 2025.
+<strong>Link</strong>: https://www.mdpi.com/2504-446X/9/10/700</p>
+<p><strong>Summary</strong>: Examines swarms from intelligence, communication, and security perspectives. AI is positioned as the key technological enabler for scalable swarm operations.</p>
+<p><strong>Citation</strong>: Premier Science, "Data Transmission Between a Drone Swarm and Ground Base: Modern Methods and Technologies," October 2025.
+<strong>Link</strong>: https://premierscience.com/pjs-25-1302/</p>
+<p><strong>Summary</strong>: Narrative review of 2015-2024 literature on swarm-to-ground communication. Covers FANETs, mesh protocols, cellular links, and hybrid architectures. Concludes that hybrid multi-link approaches are the most resilient.</p>
+<h3 id="84-key-2024-2026-trends">8.4 Key 2024-2026 Trends<a class="headerlink" href="#84-key-2024-2026-trends" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Hybrid multi-link communication</strong> (LoRa + WiFi + LTE + Starlink) with intelligent link selection is becoming the standard architecture.</li>
+<li><strong>AI/ML permeation</strong>: reinforcement learning for routing, anti-jamming, and spectrum access; LLMs for mission planning; semantic communication for bandwidth reduction.</li>
+<li><strong>GPS-denied operation</strong> driven by Ukraine conflict lessons: VIO, terrain matching, UWB relative positioning are moving from research to production.</li>
+<li><strong>Lightweight BFT consensus</strong> (SwarmRaft, DTPBFT) making distributed agreement practical on resource-constrained platforms.</li>
+<li><strong>Cooperative SLAM</strong> frameworks becoming open-source and ROS 2 native, enabling shared spatial awareness without central servers.</li>
+<li><strong>Fiber-optic tethered drones</strong> proving the concept that unjammable communication links change battlefield calculus.</li>
+</ol>
+<hr />
+<h2 id="9-sdk-upgrade-recommendation-summary">9. SDK Upgrade Recommendation Summary<a class="headerlink" href="#9-sdk-upgrade-recommendation-summary" title="Permanent link">&para;</a></h2>
+<h3 id="priority-1-core-communication-implement-first">Priority 1 -- Core Communication (Implement First)<a class="headerlink" href="#priority-1-core-communication-implement-first" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Based On</th>
+<th>Effort</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChaCha20 encryption for MAVLink</td>
+<td>Al-Tameemi 2025</td>
+<td>Medium</td>
+<td>Critical for security</td>
+</tr>
+<tr>
+<td>BATMAN-adv mesh auto-formation</td>
+<td>Multiple mesh studies</td>
+<td>Low</td>
+<td>Foundation for multi-drone</td>
+</tr>
+<tr>
+<td>Dual-radio architecture (LoRa + WiFi)</td>
+<td>Davoli 2021</td>
+<td>High</td>
+<td>Enables range + bandwidth</td>
+</tr>
+<tr>
+<td>Message priority queue</td>
+<td>Gap in literature</td>
+<td>Medium</td>
+<td>Bandwidth management</td>
+</tr>
+<tr>
+<td>Compact swarm-status message</td>
+<td>Pascarella 2016</td>
+<td>Low</td>
+<td>Reduces bandwidth per drone</td>
+</tr>
+</tbody>
+</table>
+<h3 id="priority-2-resilient-positioning-implement-second">Priority 2 -- Resilient Positioning (Implement Second)<a class="headerlink" href="#priority-2-resilient-positioning-implement-second" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Based On</th>
+<th>Effort</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UWB relative localization</td>
+<td>Li 2024, Bitcraze</td>
+<td>Medium</td>
+<td>GPS-denied capability</td>
+</tr>
+<tr>
+<td>VIO integration (PX4 native)</td>
+<td>ModalAI, OKSI</td>
+<td>Low</td>
+<td>GPS backup</td>
+</tr>
+<tr>
+<td>Distributed time sync</td>
+<td>Bidirectional pseudo-range paper</td>
+<td>Medium</td>
+<td>Coordinated maneuvers</td>
+</tr>
+<tr>
+<td>SwarmRaft consensus protocol</td>
+<td>SwarmRaft 2025</td>
+<td>Medium</td>
+<td>Fault-tolerant decisions</td>
+</tr>
+</tbody>
+</table>
+<h3 id="priority-3-advanced-capabilities-v2-of-sdk">Priority 3 -- Advanced Capabilities (v2 of SDK)<a class="headerlink" href="#priority-3-advanced-capabilities-v2-of-sdk" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Based On</th>
+<th>Effort</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Geographic routing module</td>
+<td>UF-GPSR, GPSR+AODV</td>
+<td>High</td>
+<td>Large swarm scalability</td>
+</tr>
+<tr>
+<td>Multi-link manager (LTE/Starlink)</td>
+<td>FAA BAA004, hybrid research</td>
+<td>High</td>
+<td>BVLOS capability</td>
+</tr>
+<tr>
+<td>Cooperative SLAM integration</td>
+<td>Swarm-SLAM, D2SLAM</td>
+<td>High</td>
+<td>Shared spatial awareness</td>
+</tr>
+<tr>
+<td>Store-and-forward DTN buffer</td>
+<td>DTN literature</td>
+<td>Medium</td>
+<td>Intermittent connectivity</td>
+</tr>
+<tr>
+<td>WiFi channel rotation (basic anti-jam)</td>
+<td>FHSS literature</td>
+<td>Low</td>
+<td>Basic EW resilience</td>
+</tr>
+</tbody>
+</table>
+<h3 id="priority-4-researchfuture-track-but-dont-implement-yet">Priority 4 -- Research/Future (Track but Don't Implement Yet)<a class="headerlink" href="#priority-4-researchfuture-track-but-dont-implement-yet" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Based On</th>
+<th>Maturity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Semantic communication / LLM compression</td>
+<td>arXiv 2508.12043</td>
+<td>Early research</td>
+</tr>
+<tr>
+<td>Cognitive radio / dynamic spectrum access</td>
+<td>Bhardwaj 2021</td>
+<td>Needs SDR hardware</td>
+</tr>
+<tr>
+<td>Full BFT consensus (DTPBFT)</td>
+<td>DTPBFT 2024</td>
+<td>Needs companion computer</td>
+</tr>
+<tr>
+<td>QRNG-enhanced FHSS</td>
+<td>Chrysovalantis 2024</td>
+<td>Needs specialized hardware</td>
+</tr>
+<tr>
+<td>LLM-based mission planning</td>
+<td>arXiv 2501.02341</td>
+<td>Early research</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="key-sources">Key Sources<a class="headerlink" href="#key-sources" title="Permanent link">&para;</a></h2>
+<h3 id="protocol-and-security">Protocol and Security<a class="headerlink" href="#protocol-and-security" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/pdf/1906.10641">MAVLink Survey (arXiv 1906.10641)</a></li>
+<li><a href="https://arxiv.org/abs/1905.00265">MAVSec (arXiv 1905.00265)</a></li>
+<li><a href="https://arxiv.org/html/2504.20626v1">ChaCha20 for MAVLink (arXiv 2504.20626)</a></li>
+<li><a href="https://arxiv.org/pdf/2601.08229">UAV Security Survey 2026 (arXiv 2601.08229)</a></li>
+<li><a href="https://mavlink.io/en/about/overview.html">MAVLink Protocol Overview</a></li>
+</ul>
+<h3 id="mesh-networking">Mesh Networking<a class="headerlink" href="#mesh-networking" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://www.mdpi.com/2504-446X/5/2/26">Hybrid LoRa-802.11s Mesh (MDPI)</a></li>
+<li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10007589/">LoRa FANET Survey (PMC)</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/9491655/">LoRa FANET (IEEE)</a></li>
+<li><a href="https://www.net.in.tum.de/fileadmin/TUM/NET/NET-2024-09-1/NET-2024-09-1_02.pdf">BATMAN Unpacked (TU Munich)</a></li>
+<li><a href="https://dl.acm.org/doi/10.1145/3360774.3368197">802.11s Custom Metrics (ACM)</a></li>
+<li><a href="https://dl.acm.org/doi/10.1145/3389400.3389406">802.11s 3D Extension (ACM)</a></li>
+<li><a href="https://arxiv.org/pdf/2108.13154">Mesh Secure (arXiv)</a></li>
+</ul>
+<h3 id="geographic-routing">Geographic Routing<a class="headerlink" href="#geographic-routing" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/ett.4813">UF-GPSR (Wiley)</a></li>
+<li><a href="https://www.sciencedirect.com/science/article/pii/S1319157824001551">GPSR+AODV (ScienceDirect)</a></li>
+<li><a href="https://www.mdpi.com/2079-9292/14/7/1456">MP-QGRD Geographic Routing (MDPI)</a></li>
+<li><a href="https://www.mdpi.com/2504-446X/7/6/387">RL Geographic Routing (MDPI)</a></li>
+<li><a href="https://www.sciencedirect.com/science/article/pii/S1110016824010469">FANET Routing Strategies Survey (ScienceDirect)</a></li>
+</ul>
+<h3 id="anti-jamming-and-ew">Anti-Jamming and EW<a class="headerlink" href="#anti-jamming-and-ew" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://www.mdpi.com/1999-5903/16/11/412">QRNG FHSS (MDPI)</a></li>
+<li><a href="https://arxiv.org/html/2508.11687v1">Agent Anti-Jamming Survey (arXiv 2508.11687)</a></li>
+<li><a href="https://arxiv.org/html/2504.07358v1">EW Cyberattacks Survey (arXiv 2504.07358)</a></li>
+<li><a href="https://powerhornet.com/how-ukrainian-startups-forged-a-new-era-of-gps-free-drone-navigation/">Ukraine GPS-Free Navigation (PowerHornet)</a></li>
+<li><a href="https://spectrum.ieee.org/autonomous-drone-warfare">Autonomous Drone Warfare (IEEE Spectrum)</a></li>
+<li><a href="https://www.sciencedirect.com/science/article/abs/pii/S1389128621002929">Cognitive Radio UAV (ScienceDirect)</a></li>
+</ul>
+<h3 id="consensus-and-synchronization">Consensus and Synchronization<a class="headerlink" href="#consensus-and-synchronization" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/html/2508.00622v2">SwarmRaft (arXiv 2508.00622)</a></li>
+<li><a href="https://www.sciencedirect.com/science/article/pii/S1389128624004341">DTPBFT (ScienceDirect)</a></li>
+<li><a href="https://link.springer.com/article/10.1007/s43926-025-00164-y">RePA BFT (Springer)</a></li>
+<li><a href="https://www.sciencedirect.com/science/article/pii/S1570870523002469">Time Sync Bidirectional (ScienceDirect)</a></li>
+<li><a href="https://bettstetter.com/one-time-for-all/">Firefly Time Sync (Bettstetter)</a></li>
+<li><a href="https://www.sciencedirect.com/science/article/abs/pii/S1574119217303735">Swarm-Sync (ScienceDirect)</a></li>
+</ul>
+<h3 id="cellular-and-satellite">Cellular and Satellite<a class="headerlink" href="#cellular-and-satellite" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11511506/">LTE Drone Experiments (PMC)</a></li>
+<li><a href="https://www.mdpi.com/2504-446X/9/12/812">LTE Long-Range UAV Control (MDPI)</a></li>
+<li><a href="https://www.faa.gov/uas/programs_partnerships/BAA/BAA004-uAvionix-Conducting-Extended-BVLOS-Operations-in-challenging-terrain.pdf">FAA Starlink BVLOS Demo (FAA)</a></li>
+<li><a href="https://dronedj.com/2024/08/12/event38-adding-spacex-starlink-to-drones-for-bvlos-flights/">Event38 Starlink (DroneDJ)</a></li>
+<li><a href="https://www.groundcontrol.com/blog/satellite-connectivity-drones-faqs/">Drone Satcoms FAQ (Ground Control)</a></li>
+</ul>
+<h3 id="relative-positioning-and-slam">Relative Positioning and SLAM<a class="headerlink" href="#relative-positioning-and-slam" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/html/2003.05853v3">UWB Relative Localization 13 Drones (arXiv)</a></li>
+<li><a href="https://www.bitcraze.io/2021/06/ultra-wideband-swarm-ranging/">Bitcraze UWB Swarm Ranging</a></li>
+<li><a href="https://www.nature.com/articles/s41597-025-04808-0">UWB Dataset (Nature)</a></li>
+<li><a href="https://arxiv.org/html/2412.02393v1">UVDAR Bio-Inspired Visual Localization (arXiv)</a></li>
+<li><a href="https://github.com/ETH-PBL/Nano_Swarm_Mapping">Nano Swarm Mapping (GitHub/arXiv)</a></li>
+<li><a href="https://github.com/MISTLab/Swarm-SLAM">Swarm-SLAM (GitHub)</a></li>
+<li><a href="https://github.com/HKUST-Aerial-Robotics/D2SLAM">D2SLAM (GitHub)</a></li>
+<li><a href="https://link.springer.com/chapter/10.1007/978-981-96-2220-7_18">VIO-UWB SLAM (Springer)</a></li>
+<li><a href="https://github.com/IMRCLab/crazyswarm2">Crazyswarm2 (GitHub)</a></li>
+</ul>
+<h3 id="state-of-the-art-surveys-2025-2026">State of the Art Surveys (2025-2026)<a class="headerlink" href="#state-of-the-art-surveys-2025-2026" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2508.12043">LLM Semantic Compression (arXiv 2508.12043)</a></li>
+<li><a href="https://arxiv.org/abs/2503.00053">6G Semantic Communication (arXiv 2503.00053)</a></li>
+<li><a href="https://arxiv.org/html/2506.08045v1">Agentic UAVs Survey (arXiv 2506.08045)</a></li>
+<li><a href="https://link.springer.com/article/10.1186/s44147-025-00582-3">UAV Swarms Survey 2025 (Springer)</a></li>
+<li><a href="https://www.mdpi.com/2504-446X/9/10/700">UxV Swarms + AI Survey (MDPI)</a></li>
+<li><a href="https://premierscience.com/pjs-25-1302/">Swarm-Ground Transmission Review (Premier Science)</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
