@@ -1,6 +1,8 @@
 """Shared fixtures for drone-swarm tests.
 
 All fixtures here are designed to work WITHOUT pymavlink or ArduPilot SITL.
+SITL integration tests (marked ``@pytest.mark.sitl``) are skipped by default;
+pass ``--sitl`` to enable them.
 """
 
 import pytest
@@ -13,6 +15,36 @@ from drone_swarm.drone import (
     Waypoint,
 )
 from drone_swarm.swarm import SwarmOrchestrator
+
+
+# ---------------------------------------------------------------------------
+# --sitl CLI flag and automatic skip for @pytest.mark.sitl tests
+# ---------------------------------------------------------------------------
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--sitl",
+        action="store_true",
+        default=False,
+        help="Run SITL integration tests (requires a running SITL instance)",
+    )
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "sitl: mark test as requiring a running ArduPilot SITL instance",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--sitl"):
+        # --sitl passed: don't skip SITL tests
+        return
+    skip_sitl = pytest.mark.skip(reason="SITL tests disabled (pass --sitl to run)")
+    for item in items:
+        if "sitl" in item.keywords:
+            item.add_marker(skip_sitl)
 
 # ---------------------------------------------------------------------------
 # Basic data fixtures
