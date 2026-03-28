@@ -47,8 +47,8 @@ async def main():
     swarm.enable_collision_avoidance(min_distance_m=6.0)
 
     # Prepare per-drone battery predictors and wind estimators
-    batteries = {n: BatteryPredictor() for n in names}
-    wind_est = {n: WindEstimator() for n in names}
+    {n: BatteryPredictor() for n in names}
+    {n: WindEstimator() for n in names}
 
     print("[AG] Taking off for field survey...")
     await swarm.takeoff(altitude=ALTITUDE)
