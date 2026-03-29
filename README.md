@@ -3,9 +3,9 @@
 **Python SDK for multi-drone swarm orchestration.**
 
 [![PyPI version](https://img.shields.io/pypi/v/drone-swarm)](https://pypi.org/project/drone-swarm/)
-[![Downloads](https://img.shields.io/pypi/dm/drone-swarm)](https://pypi.org/project/drone-swarm/)
+[![Downloads](https://img.shields.io/pepy/dt/drone-swarm)](https://pepy.tech/project/drone-swarm)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://img.shields.io/github/actions/workflow/status/yuyongju/drone-swarm/ci.yml?label=CI)](https://github.com/yuyongju/drone-swarm/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/YuYongJu/drone-swarm-orchestrator/ci.yml?label=CI)](https://github.com/YuYongJu/drone-swarm-orchestrator/actions)
 [![Python](https://img.shields.io/pypi/pyversions/drone-swarm)](https://pypi.org/project/drone-swarm/)
 
 Turn a collection of ArduPilot drones into a coordinated swarm with 10 lines of Python.
