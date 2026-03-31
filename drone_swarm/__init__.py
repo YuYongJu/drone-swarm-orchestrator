@@ -25,6 +25,7 @@ Public API exports
 - **SwarmConfig** -- configuration object (YAML/dict/defaults)
 - **SimulationHarness** -- SITL multi-drone launcher
 - **CheckResult** -- preflight check result
+- **Mission** / **MissionBuilder** -- fluent mission builder
 - Missions: **v_formation**, **line_formation**, **area_sweep**, **orbit_point**
 - Safety: **run_preflight_checks**, **preflight_ok**
 """
@@ -41,6 +42,9 @@ from .anomaly import Anomaly, AnomalyDetector
 # Geofence
 # Battery prediction
 from .battery import BatteryConfig, BatteryPredictor
+
+# Mission builder
+from .mission_builder import Mission, MissionBuilder
 
 # Behavior plugin system
 from .behavior import Behavior, BehaviorEvent, BehaviorRegistry
@@ -161,6 +165,9 @@ __all__ = [
     "energy_cost",
     "line_formation",
     "load_flight_log",
+    # Mission builder
+    "Mission",
+    "MissionBuilder",
     # Allocation
     "optimal_assign",
     "orbit_point",
