@@ -6,7 +6,6 @@ waypoint generation for multi-drone missions.
 
 import json
 import os
-import tempfile
 
 import pytest
 

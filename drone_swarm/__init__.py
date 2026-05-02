@@ -43,9 +43,6 @@ from .anomaly import Anomaly, AnomalyDetector
 # Battery prediction
 from .battery import BatteryConfig, BatteryPredictor
 
-# Mission builder
-from .mission_builder import Mission, MissionBuilder
-
 # Behavior plugin system
 from .behavior import Behavior, BehaviorEvent, BehaviorRegistry
 
@@ -77,6 +74,9 @@ from .geofence import Geofence, GeofenceStatus
 
 # Health scoring
 from .health import compute_health_score
+
+# Mission builder
+from .mission_builder import Mission, MissionBuilder
 
 # Missions
 from .missions import area_sweep, line_formation, orbit_point, polygon_sweep, v_formation
@@ -132,6 +132,9 @@ __all__ = [
     # Geofence
     "Geofence",
     "GeofenceStatus",
+    # Mission builder
+    "Mission",
+    "MissionBuilder",
     "OrcaVelocity",
     # Path planning
     "PathPlanner",
@@ -165,9 +168,6 @@ __all__ = [
     "energy_cost",
     "line_formation",
     "load_flight_log",
-    # Mission builder
-    "Mission",
-    "MissionBuilder",
     # Allocation
     "optimal_assign",
     "orbit_point",
