@@ -8,6 +8,8 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/YuYongJu/drone-swarm-orchestrator/ci.yml?label=CI)](https://github.com/YuYongJu/drone-swarm-orchestrator/actions)
 [![Python](https://img.shields.io/pypi/pyversions/drone-swarm)](https://pypi.org/project/drone-swarm/)
 
+> **Status: alpha (0.1.x).** The SDK runs against SITL and the test suite passes, but the project is pre-1.0 — expect API breakage between minor versions, and don't fly real hardware off this without your own preflight and safety review. Production drone work needs more eyes than a single maintainer.
+
 Turn a collection of ArduPilot drones into a coordinated swarm with 10 lines of Python.
 
 ```python
@@ -64,11 +66,11 @@ Full docs, tutorials, and API reference: [docs/index.md](docs/index.md)
 
 ## Who is this for?
 
-- **Developers** building drone applications (agriculture, inspection, SAR, mapping)
+- **Developers** prototyping drone applications (agriculture, inspection, SAR, mapping) on SITL
 - **Researchers** studying swarm robotics and multi-agent coordination
 - **Students** learning autonomous systems and MAVLink
-- **Startups** building commercial drone services
-- **Defense integrators** needing an open, auditable swarm layer
+
+Not yet recommended for production commercial or defense deployments — the surface area is real but the operational hours behind it are not.
 
 ## Contributing
 
